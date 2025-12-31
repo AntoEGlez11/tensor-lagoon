@@ -1,0 +1,77 @@
+<div class="min-h-screen bg-auto-black pt-20 pb-12">
+    <div class="container mx-auto px-4">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-center mb-12">
+            <div>
+                <h1 class="text-3xl font-bold text-white mb-2">My <span class="text-auto-accent">Garage</span></h1>
+                <p class="text-gray-400">Welcome back, {{ user()?.email }}</p>
+            </div>
+            <button (click)="logout()"
+                class="mt-4 md:mt-0 border border-white/20 hover:bg-white/10 text-white px-6 py-2 rounded-full text-sm transition-colors">
+                Sign Out
+            </button>
+        </div>
+
+        <!-- Active Services -->
+        <div class="mb-12">
+            <h2 class="text-xl font-bold text-white mb-6 flex items-center">
+                <span class="w-2 h-8 bg-auto-accent mr-3 rounded-full"></span>
+                Active Services
+            </h2>
+
+            @if (activeServices().length > 0) {
+            <div class="grid gap-6">
+                @for (service of activeServices(); track service.id) {
+                <div
+                    class="bg-auto-carbon border border-auto-accent/30 rounded-2xl p-6 relative overflow-hidden group hover:border-auto-accent transition-colors">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                        <svg class="w-24 h-24 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row justify-between relative z-10">
+                        <div>
+                            <div class="text-auto-accent text-sm font-bold uppercase tracking-wider mb-1">{{
+                                service.status }}</div>
+                            <h3 class="text-2xl font-bold text-white mb-2">{{ service.vehicle }}</h3>
+                            <p class="text-gray-400 mb-4">{{ service.package }}</p>
+                            <div class="text-xs text-gray-500 font-mono">ID: {{ service.id }}</div>
+                        </div>
+                        <div class="mt-6 md:mt-0 flex items-end">
+                            <div class="text-right">
+                                <div class="text-gray-400 text-sm">Estimated Completion</div>
+                                <div class="text-white font-bold text-lg">Today, 5:00 PM</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-black/50 h-2 rounded-full mt-6 overflow-hidden">
+                        <div class="bg-auto-accent h-full w-2/3 shadow-[0_0_10px_rgba(255,62,62,0.5)]"></div>
+                    </div>
+                </div>
+                }
+            </div>
+            } @else {
+            <div class="bg-auto-carbon border border-white/5 rounded-2xl p-12 text-center">
+                <div
+                    class="bg-white/5 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
+                        </path>
+                    </svg>
+                </div>
+                <h3 class="text-white font-bold text-lg mb-2">No Active Services</h3>
+                <p class="text-gray-400 mb-6">You don't have any services in progress right now.</p>
+                <a routerLink="/services"
+                    class="inline-block bg-auto-accent hover:bg-red-600 text-white px-6 py-2 rounded-lg font-bold transition-colors">
+                    Book a Service
+                </a>
+            </div>
+            }
+        </div>
+    </div>
+</div>

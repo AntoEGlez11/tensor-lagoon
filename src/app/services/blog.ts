@@ -1,43 +1,71 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
+import { Firestore, collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc, getDoc } from '@angular/fire/firestore';
 
 export interface BlogPost {
-  id: string;
+  id?: string;
   title: string;
   excerpt: string;
+  content?: string; // Added for full content support later
   image: string;
   date: string;
   category: string;
+  createdAt?: any;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class BlogService {
-  // Mock data for initial development
-  readonly posts = signal<BlogPost[]>([
-    {
-      id: '1',
-      title: 'The Ultimate Guide to Ceramic Coating',
-      excerpt: 'Discover why ceramic coating is the best investment for your vehicle\'s longevity and shine.',
-      image: 'https://placehold.co/600x400/1a1a1a/FFF?text=Ceramic+Coating',
-      date: 'Oct 12, 2024',
-      category: 'Protection'
-    },
-    {
-      id: '2',
-      title: 'Interior Detailing: More Than Just a Vacuum',
-      excerpt: 'Learn the secrets of deep cleaning your car\'s interior to remove allergens and odors.',
-      image: 'https://placehold.co/600x400/1a1a1a/FFF?text=Interior+Detail',
-      date: 'Oct 15, 2024',
-      category: 'Detailing'
-    },
-    {
-      id: '3',
-      title: 'Paint Correction vs. Polishing',
-      excerpt: 'Understanding the difference between simple polishing and full paint correction.',
-      image: 'https://placehold.co/600x400/1a1a1a/FFF?text=Paint+Correction',
-      date: 'Oct 20, 2024',
-      category: 'Restoration'
+  private firestore = inject(Firestore);
+  private postsCollection = collection(this.firestore, 'posts');
+
+  // Signal that holds the current list of posts (synced with Firestore)
+  readonly posts = signal<BlogPost[]>([]);
+
+  constructor() {
+    this.initRealtimeSync();
+  }
+
+  private initRealtimeSync() {
+    const q = query(this.postsCollection, orderBy('createdAt', 'desc'));
+
+    onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as BlogPost));
+      this.posts.set(data);
+    });
+  }
+
+  async createPost(post: Omit<BlogPost, 'id' | 'createdAt'>) {
+    return addDoc(this.postsCollection, {
+      ...post,
+      createdAt: new Date()
+    });
+  }
+
+  async deletePost(id: string) {
+    const docRef = doc(this.firestore, 'posts', id);
+    await deleteDoc(docRef);
+  }
+
+  async updatePost(id: string, data: Partial<BlogPost>) {
+    const docRef = doc(this.firestore, 'posts', id);
+    await updateDoc(docRef, data);
+  }
+
+  async getPost(id: string) {
+    return this.getPostDoc(id);
+  }
+
+  private async getPostDoc(id: string) {
+    const docRef = doc(this.firestore, 'posts', id);
+    // Explicitly import getDoc to be safe, though it should be in top imports
+    const snapshot = await getDoc(docRef);
+    if (snapshot.exists()) {
+      return { id: snapshot.id, ...snapshot.data() } as BlogPost;
     }
-  ]);
+    return null;
+  }
 }

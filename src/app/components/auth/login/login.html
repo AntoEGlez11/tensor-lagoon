@@ -1,0 +1,41 @@
+<div class="min-h-screen flex items-center justify-center bg-auto-black p-4">
+    <div class="bg-auto-carbon border border-white/5 p-8 rounded-2xl w-full max-w-md shadow-2xl">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 mb-2">
+                TENSOR<span class="text-auto-accent">ADMIN</span>
+            </h1>
+            <p class="text-gray-400 text-sm">Sign in to access the control panel</p>
+        </div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
+            @if (error()) {
+            <div class="bg-red-500/10 border border-red-500/20 text-red-500 text-sm p-4 rounded-lg text-center">
+                {{ error() }}
+            </div>
+            }
+
+            <div>
+                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Email Address</label>
+                <input formControlName="email" type="email"
+                    class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-auto-accent focus:ring-1 focus:ring-auto-accent transition-all"
+                    placeholder="admin@tensor.com">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Password</label>
+                <input formControlName="password" type="password"
+                    class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-auto-accent focus:ring-1 focus:ring-auto-accent transition-all"
+                    placeholder="••••••••">
+            </div>
+
+            <button type="submit" [disabled]="loading() || loginForm.invalid"
+                class="w-full bg-auto-accent hover:bg-red-600 text-white font-bold py-3.5 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_0_20px_rgba(255,62,62,0.3)]">
+                @if (loading()) {
+                Signing In...
+                } @else {
+                Access Dashboard
+                }
+            </button>
+        </form>
+    </div>
+</div>

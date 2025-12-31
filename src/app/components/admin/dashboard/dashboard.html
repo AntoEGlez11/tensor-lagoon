@@ -1,66 +1,110 @@
 <div>
-    <header class="mb-8">
-        <h1 class="text-3xl font-bold">Dashboard</h1>
-        <p class="text-gray-400">Welcome back, Admin. Here's what's happening today.</p>
+    <header class="mb-8 flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold">Dashboard</h1>
+            <p class="text-gray-400">Manage your service queue</p>
+        </div>
+        <button (click)="showCreateForm.set(!showCreateForm())"
+            class="bg-auto-accent hover:bg-red-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors">
+            {{ showCreateForm() ? 'Cancel' : '+ New Service' }}
+        </button>
     </header>
 
-    <!-- Stats Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-auto-carbon p-6 rounded-xl border border-white/5">
-            <div class="text-gray-400 text-sm mb-1">Total Revenue</div>
-            <div class="text-2xl font-bold text-white">$12,450</div>
-            <div class="text-green-500 text-xs mt-2">+15% from last month</div>
-        </div>
-        <div class="bg-auto-carbon p-6 rounded-xl border border-white/5">
-            <div class="text-gray-400 text-sm mb-1">Active Services</div>
-            <div class="text-2xl font-bold text-white">8</div>
-            <div class="text-auto-accent text-xs mt-2">2 Urgent</div>
-        </div>
-        <div class="bg-auto-carbon p-6 rounded-xl border border-white/5">
-            <div class="text-gray-400 text-sm mb-1">New Appointments</div>
-            <div class="text-2xl font-bold text-white">14</div>
-            <div class="text-gray-500 text-xs mt-2">Today</div>
-        </div>
-        <div class="bg-auto-carbon p-6 rounded-xl border border-white/5">
-            <div class="text-gray-400 text-sm mb-1">Total Customers</div>
-            <div class="text-2xl font-bold text-white">892</div>
-            <div class="text-green-500 text-xs mt-2">+5 this week</div>
-        </div>
-    </div>
+    @if (showCreateForm()) {
+    <div class="bg-auto-carbon border border-white/10 rounded-xl p-6 mb-8 animate-fade-in">
+        <h2 class="text-xl font-bold mb-4">Create New Ticket</h2>
+        <h2 class="text-xl font-bold mb-4">Create New Ticket</h2>
+        <form [formGroup]="createForm" (ngSubmit)="createService()" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Removed direct UID input, now handled via logic or just email if we trust unique emails -->
+            <div class="md:col-span-2">
+                <label class="text-xs text-gray-500 block mb-1">Customer Email</label>
+                <div class="flex gap-2">
+                    <input formControlName="customerEmail" type="email" placeholder="customer@example.com"
+                        class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white">
+                    <button type="button" (click)="lookupUser()"
+                        class="bg-blue-600 hover:bg-blue-500 text-white px-4 rounded-lg font-bold text-xs"
+                        [disabled]="loadingLookup()">
+                        {{ loadingLookup() ? 'Searching...' : 'Search' }}
+                    </button>
+                </div>
+                @if (foundUser()) {
+                <div class="text-green-500 text-xs mt-1">✓ User found: {{ foundUser()?.email }} ({{ foundUser()?.uid }})
+                </div>
+                } @else if (lookupAttempted()) {
+                <div class="text-red-500 text-xs mt-1">✗ User not found</div>
+                }
+            </div>
 
-    <!-- Recent Services Table -->
+            <input formControlName="vehicle" type="text" placeholder="Vehicle (e.g. Ford Mustang)"
+                class="bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white">
+
+            <select formControlName="package"
+                class="bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white">
+                <option value="Basic Wash">Basic Wash</option>
+                <option value="Premium Detail">Premium Detail</option>
+                <option value="Ceramic Coating">Ceramic Coating</option>
+            </select>
+
+            <input formControlName="price" type="number" placeholder="Price"
+                class="bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white">
+
+            <button [disabled]="createForm.invalid" type="submit"
+                class="bg-white text-black font-bold rounded-lg px-4 py-2 hover:bg-gray-200 transition-colors disabled:opacity-50">Create
+                Ticket</button>
+        </form>
+    </div>
+    }
+
+    <!-- Active Services Table -->
     <div class="bg-auto-carbon rounded-xl border border-white/5 overflow-hidden">
-        <div class="p-6 border-b border-white/5 flex justify-between items-center">
-            <h3 class="font-bold">Recent Services</h3>
-            <button class="text-sm text-auto-accent hover:text-white">View All</button>
+        <div class="p-6 border-b border-white/5">
+            <h3 class="font-bold">Active Services Queue</h3>
         </div>
         <table class="w-full text-sm">
             <thead class="bg-black/20 text-gray-400">
                 <tr>
-                    <th class="px-6 py-3 text-left">Customer</th>
                     <th class="px-6 py-3 text-left">Vehicle</th>
                     <th class="px-6 py-3 text-left">Service</th>
+                    <th class="px-6 py-3 text-left">Customer</th>
                     <th class="px-6 py-3 text-left">Status</th>
-                    <th class="px-6 py-3 text-right">Amount</th>
+                    <th class="px-6 py-3 text-right">Actions</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-white/5">
+                @for (ticket of services(); track ticket.id) {
                 <tr class="hover:bg-white/5 transition-colors">
-                    <td class="px-6 py-4">Alex Morgan</td>
-                    <td class="px-6 py-4">Porsche 911 GT3</td>
-                    <td class="px-6 py-4">Ceramic Coating</td>
-                    <td class="px-6 py-4"><span class="bg-yellow-500/20 text-yellow-500 px-2 py-1 rounded text-xs">In
-                            Progress</span></td>
-                    <td class="px-6 py-4 text-right">$1,200</td>
+                    <td class="px-6 py-4 font-bold">{{ ticket.vehicle }}</td>
+                    <td class="px-6 py-4">{{ ticket.package }}</td>
+                    <td class="px-6 py-4 text-gray-400">{{ ticket.customerEmail }}</td>
+                    <td class="px-6 py-4">
+                        <span class="px-2 py-1 rounded text-xs uppercase font-bold"
+                            [class.bg-yellow-500_20]="ticket.status === 'pending'"
+                            [class.text-yellow-500]="ticket.status === 'pending'"
+                            [class.bg-blue-500_20]="ticket.status === 'in-progress'"
+                            [class.text-blue-500]="ticket.status === 'in-progress'"
+                            [class.bg-green-500_20]="ticket.status === 'ready'"
+                            [class.text-green-500]="ticket.status === 'ready'"
+                            [class.bg-gray-500_20]="ticket.status === 'completed'"
+                            [class.text-gray-500]="ticket.status === 'completed'">
+                            {{ ticket.status }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-right space-x-2">
+                        @if (ticket.status === 'pending') {
+                        <button (click)="updateStatus(ticket.id!, 'in-progress')"
+                            class="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">Start</button>
+                        }
+                        @if (ticket.status === 'in-progress') {
+                        <button (click)="updateStatus(ticket.id!, 'ready')"
+                            class="text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">Finish</button>
+                        }
+                        @if (ticket.status === 'ready') {
+                        <button (click)="updateStatus(ticket.id!, 'completed')"
+                            class="text-xs bg-gray-600 text-white px-2 py-1 rounded hover:bg-gray-700">Close</button>
+                        }
+                    </td>
                 </tr>
-                <tr class="hover:bg-white/5 transition-colors">
-                    <td class="px-6 py-4">Sarah Connor</td>
-                    <td class="px-6 py-4">Tesla Model S</td>
-                    <td class="px-6 py-4">Interior Detail</td>
-                    <td class="px-6 py-4"><span
-                            class="bg-green-500/20 text-green-500 px-2 py-1 rounded text-xs">Completed</span></td>
-                    <td class="px-6 py-4 text-right">$350</td>
-                </tr>
+                }
             </tbody>
         </table>
     </div>

@@ -1,17 +1,39 @@
 <header class="fixed top-0 left-0 w-full z-50 bg-auto-black/80 backdrop-blur-md border-b border-white/10">
     <div class="container mx-auto px-6 h-16 flex items-center justify-between">
-        <div class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+        <a routerLink="/"
+            class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 cursor-pointer hover:opacity-80 transition-opacity">
             TENSOR<span class="text-auto-accent">LAGUNA</span>
-        </div>
+        </a>
         <nav class="hidden md:flex space-x-8">
-            <a href="#" class="text-sm font-medium hover:text-auto-accent transition-colors">BLOG</a>
-            <a href="#" class="text-sm font-medium hover:text-auto-accent transition-colors">SERVICES</a>
-            <a href="#" class="text-sm font-medium hover:text-auto-accent transition-colors">ABOUT</a>
-            <a href="#" class="text-sm font-medium hover:text-auto-accent transition-colors">CONTACT</a>
+            <a routerLink="/blog" routerLinkActive="text-auto-accent" [routerLinkActiveOptions]="{exact: false}"
+                class="text-sm font-medium text-gray-300 hover:text-white transition-colors cursor-pointer">HOME
+                (BLOG)</a>
+            <a routerLink="/services" routerLinkActive="text-auto-accent"
+                class="text-sm font-medium text-gray-300 hover:text-white transition-colors cursor-pointer">SERVICES</a>
+            <a routerLink="/contact" routerLinkActive="text-auto-accent"
+                class="text-sm font-medium text-gray-300 hover:text-white transition-colors cursor-pointer">CONTACT</a>
+            <a routerLink="/admin" routerLinkActive="text-auto-accent"
+                class="text-sm font-medium text-gray-300 hover:text-white transition-colors cursor-pointer">ADMIN</a>
         </nav>
-        <button
-            class="bg-auto-accent hover:bg-red-600 text-white px-5 py-2 rounded-full text-sm font-bold transition-transform transform hover:scale-105">
-            BOOK NOW
-        </button>
+        <div class="flex items-center space-x-4">
+            @if (user()) {
+            <a [routerLink]="user()?.email === 'admin@tensor.com' ? '/admin' : '/dashboard'"
+                class="text-sm font-medium text-white hover:text-auto-accent transition-colors cursor-pointer hidden md:block">
+                MY DASHBOARD
+            </a>
+            <button (click)="logout()"
+                class="bg-auto-carbon border border-white/20 hover:bg-white/10 text-white px-5 py-2 rounded-full text-sm font-bold transition-colors">
+                SIGN OUT
+            </button>
+            } @else {
+            <a routerLink="/login"
+                class="text-sm font-medium text-gray-300 hover:text-white transition-colors hidden md:block cursor-pointer">SIGN
+                IN</a>
+            <a routerLink="/register"
+                class="bg-auto-accent hover:bg-red-600 text-white px-5 py-2 rounded-full text-sm font-bold transition-transform transform hover:scale-105 cursor-pointer">
+                JOIN US
+            </a>
+            }
+        </div>
     </div>
 </header>

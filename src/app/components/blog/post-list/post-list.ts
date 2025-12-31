@@ -1,10 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { PostCard } from '../post-card/post-card';
 import { BlogService } from '../../../services/blog';
+import { Hero } from '../hero/hero';
 
 @Component({
   selector: 'app-post-list',
-  imports: [PostCard],
+  imports: [PostCard, Hero],
   templateUrl: './post-list.html',
   styleUrl: './post-list.css',
 })
