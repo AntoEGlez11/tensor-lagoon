@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, user, User } from '@angular/fire/auth';
-import { Firestore, doc, setDoc, getDoc } from '@angular/fire/firestore';
+import { Firestore, doc, setDoc, getDoc, collection, query, where, getDocs, writeBatch } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 
@@ -50,12 +50,54 @@ export class AuthService {
       const credential = await createUserWithEmailAndPassword(this.auth, email, pass);
       const uid = credential.user.uid;
 
-      // Create user profile in Firestore
-      await setDoc(doc(this.firestore, 'users', uid), {
+      // Adoption Logic: Check if Admin already created a 'ghost' profile for this email
+      const usersRef = collection(this.firestore, 'users');
+      const q = query(usersRef, where('email', '==', email));
+      const snapshot = await getDocs(q);
+
+      let initialData = {
         email: email,
         role: 'customer',
-        createdAt: new Date()
-      });
+        createdAt: new Date(),
+        phone: '',
+        name: '',
+        licensePlates: [] as string[]
+      };
+
+      if (!snapshot.empty) {
+        // Ghost profile exists!
+        const ghostDoc = snapshot.docs[0];
+        const ghostData = ghostDoc.data();
+
+        // Adopt data
+        initialData = {
+          ...initialData,
+          ...ghostData, // Merge fields like name, phone, licensePlates
+          role: 'customer' // Ensure they stay customer even if ghost had weird data
+        };
+
+        // Transfer Services from Ghost ID to New Auth UID
+        const ghostId = ghostDoc.id;
+        const servicesRef = collection(this.firestore, 'services');
+        const qServices = query(servicesRef, where('customerId', '==', ghostId));
+        const serviceSnap = await getDocs(qServices);
+
+        const batch = writeBatch(this.firestore);
+
+        // 1. Update all services to point to new UID
+        serviceSnap.docs.forEach(svc => {
+          batch.update(svc.ref, { customerId: uid });
+        });
+
+        // 2. Delete the old ghost user doc (optional, but cleaner)
+        batch.delete(ghostDoc.ref);
+
+        await batch.commit();
+        console.log(`Adopted ${serviceSnap.size} services from ghost user ${ghostId}`);
+      }
+
+      // Create new official profile
+      await setDoc(doc(this.firestore, 'users', uid), initialData);
 
       this.router.navigate(['/dashboard']); // Redirect to Customer Dashboard
     } catch (err: any) {

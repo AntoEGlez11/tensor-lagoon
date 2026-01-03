@@ -2,6 +2,8 @@ import { Routes } from '@angular/router';
 import { PostList } from './components/blog/post-list/post-list';
 import { authGuard } from './guards/auth';
 
+import { adminGuard } from './guards/admin';
+
 export const routes: Routes = [
     { path: '', loadComponent: () => import('./components/public/home/home').then(m => m.Home) },
     { path: 'blog', loadComponent: () => import('./components/public/blog/blog').then(m => m.Blog) },
@@ -10,7 +12,7 @@ export const routes: Routes = [
     { path: 'contact', loadComponent: () => import('./components/public/contact/contact').then(m => m.Contact) },
     {
         path: 'admin',
-        canActivate: [authGuard],
+        canActivate: [authGuard, adminGuard], // Chain guards: Login First -> Then Check Admin
         loadComponent: () => import('./components/admin/admin-layout/admin-layout').then(m => m.AdminLayout),
         children: [
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
