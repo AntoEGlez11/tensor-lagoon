@@ -1,0 +1,132 @@
+<div class="space-y-6">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h2 class="text-3xl font-bold text-white mb-2">Service Offerings</h2>
+            <p class="text-gray-400">Manage the packages shown on the public website.</p>
+        </div>
+        <button (click)="startEdit()"
+            class="bg-auto-accent hover:bg-red-600 text-white px-6 py-2 rounded-lg font-bold transition-all flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Add New Package
+        </button>
+    </div>
+
+    @if (showCreateForm()) {
+    <div class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-auto-carbon border border-white/10 rounded-xl p-8 max-w-2xl w-full">
+            <h3 class="text-2xl font-bold text-white mb-6">
+                {{ editingId() ? 'Edit Package' : 'New Package' }}
+            </h3>
+
+            <form [formGroup]="form" (ngSubmit)="save()" class="space-y-6">
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Package Title</label>
+                        <input type="text" formControlName="title"
+                            class="w-full bg-auto-black border border-white/10 rounded-lg px-4 py-3 text-white focus:border-auto-accent focus:outline-none"
+                            placeholder="e.g. Ceramic Pro">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Price Display</label>
+                        <input type="text" formControlName="price"
+                            class="w-full bg-auto-black border border-white/10 rounded-lg px-4 py-3 text-white focus:border-auto-accent focus:outline-none"
+                            placeholder="e.g. $250 or 'Custom'">
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="block text-sm font-medium text-gray-400">Features List</label>
+                        <button type="button" (click)="addFeature()" class="text-xs text-auto-accent hover:underline">+
+                            Add Line</button>
+                    </div>
+
+                    <div formArrayName="features" class="space-y-2 max-h-40 overflow-y-auto pr-2">
+                        @for (control of features.controls; track $index) {
+                        <div class="flex gap-2">
+                            <input [formControlName]="$index"
+                                class="w-full bg-auto-black border border-white/10 rounded-lg px-4 py-2 text-white text-sm focus:border-auto-accent focus:outline-none"
+                                placeholder="Feature description">
+                            <button type="button" (click)="removeFeature($index)"
+                                class="text-gray-500 hover:text-red-500">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" formControlName="recommended" id="rec"
+                        class="w-5 h-5 rounded border-gray-600 bg-auto-black text-auto-accent focus:ring-auto-accent">
+                    <label for="rec" class="text-white cursor-pointer">Mark as "Most Popular" / Recommended</label>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t border-white/10">
+                    <button type="button" (click)="cancelEdit()"
+                        class="px-6 py-2 text-gray-400 hover:text-white font-medium transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" [disabled]="form.invalid"
+                        class="bg-auto-accent hover:bg-red-600 disabled:opacity-50 text-white px-8 py-2 rounded-lg font-bold transition-all">
+                        {{ editingId() ? 'Update Package' : 'Create Package' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    }
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (offer of offerings(); track offer.id) {
+        <div class="bg-auto-carbon border rounded-xl p-6 relative group" [class.border-auto-accent]="offer.recommended"
+            [class.border-white/10]="!offer.recommended">
+
+            <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button (click)="startEdit(offer)" class="p-2 bg-gray-700 rounded-lg hover:bg-blue-600 text-white">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
+                        </path>
+                    </svg>
+                </button>
+                <button (click)="delete(offer.id!)" class="p-2 bg-gray-700 rounded-lg hover:bg-red-600 text-white">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+
+            @if (offer.recommended) {
+            <span
+                class="absolute -top-3 left-4 bg-auto-accent text-white text-xs font-bold px-3 py-1 rounded-full">POPULAR</span>
+            }
+
+            <h3 class="text-xl font-bold text-white mb-2">{{ offer.title }}</h3>
+            <div class="text-2xl font-bold text-auto-accent mb-4">{{ offer.price }}</div>
+
+            <ul class="space-y-2 text-sm text-gray-400">
+                @for (feat of offer.features; track feat) {
+                <li class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-auto-accent"></span>
+                    {{ feat }}
+                </li>
+                }
+            </ul>
+        </div>
+        }
+
+        @if (offerings().length === 0) {
+        <div class="col-span-full py-12 text-center text-gray-500 border border-dashed border-white/10 rounded-xl">
+            <p>No services defined yet. Click "Add New Package" to start.</p>
+        </div>
+        }
+    </div>
+</div>

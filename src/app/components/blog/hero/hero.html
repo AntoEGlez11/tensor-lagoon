@@ -1,28 +1,34 @@
 <section class="relative h-[80vh] flex items-center justify-center overflow-hidden">
-    <!-- Dynamic Background (Placeholder for now, could be video or image) -->
-    <div class="absolute inset-0 bg-gradient-to-br from-auto-black via-auto-carbon to-[#200505] z-0"></div>
-    <div
-        class="absolute inset-0 bg-[url('https://placehold.co/1920x1080/1a1a1a/FFF?text=Automotive+Aesthetic')] bg-cover bg-center opacity-20 mix-blend-overlay">
+    <!-- Dynamic Background Slider -->
+    <div class="absolute inset-0 z-0 form-group">
+        @for (img of images; track img; let i = $index) {
+        <div class="absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out mix-blend-overlay"
+            [style.background-image]="'url(' + img + ')'" [class.opacity-40]="currentIndex() === i"
+            [class.opacity-0]="currentIndex() !== i">
+        </div>
+        }
+        <!-- Overlay Gradient for text readability -->
+        <div class="absolute inset-0 bg-gradient-to-t from-auto-black via-transparent to-auto-black opacity-90"></div>
     </div>
 
     <div class="relative z-10 text-center px-4">
         <h1 class="text-5xl md:text-7xl font-bold tracking-tighter mb-6">
-            <span class="block text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-400">MASTERING
-                THE</span>
-            <span class="block text-auto-accent">ART OF SHINE</span>
+            <span class="block text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-400">MAESTROS EN
+                EL</span>
+            <span class="block text-auto-accent">ARTE DEL BRILLO</span>
         </h1>
         <p class="text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl mx-auto font-light">
-            Experience the pinnacle of automotive aesthetics and protection.
+            Experimenta la cúspide de la estética y protección automotriz.
         </p>
         <div class="flex justify-center gap-4">
-            <button
-                class="bg-auto-accent hover:bg-red-600 text-white px-8 py-4 rounded-lg font-bold text-lg transition-all hover:shadow-[0_0_20px_rgba(255,62,62,0.4)]">
-                Explore Services
-            </button>
-            <button
-                class="border border-white/20 hover:bg-white/10 text-white px-8 py-4 rounded-lg font-bold text-lg transition-all backdrop-blur-sm">
+            <a routerLink="/services"
+                class="bg-auto-accent hover:bg-red-600 text-white px-8 py-4 rounded-lg font-bold text-lg transition-all hover:shadow-[0_0_20px_rgba(255,62,62,0.4)] cursor-pointer">
+                Ver Servicios
+            </a>
+            <!-- <a routerLink="/blog"
+                class="border border-white/20 hover:bg-white/10 text-white px-8 py-4 rounded-lg font-bold text-lg transition-all backdrop-blur-sm cursor-pointer">
                 Read the Blog
-            </button>
+            </a> -->
         </div>
     </div>
 </section>

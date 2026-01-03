@@ -5,13 +5,14 @@
             TENSOR<span class="text-auto-accent">LAGUNA</span>
         </a>
         <nav class="hidden md:flex space-x-8">
-            <a routerLink="/blog" routerLinkActive="text-auto-accent" [routerLinkActiveOptions]="{exact: false}"
-                class="text-sm font-medium text-gray-300 hover:text-white transition-colors cursor-pointer">HOME
-                (BLOG)</a>
+            <a routerLink="/" routerLinkActive="text-auto-accent" [routerLinkActiveOptions]="{exact: true}"
+                class="text-sm font-medium text-gray-300 hover:text-white transition-colors cursor-pointer">INICIO</a>
+            <a routerLink="/blog" routerLinkActive="text-auto-accent"
+                class="text-sm font-medium text-gray-300 hover:text-white transition-colors cursor-pointer">BLOG</a>
             <a routerLink="/services" routerLinkActive="text-auto-accent"
-                class="text-sm font-medium text-gray-300 hover:text-white transition-colors cursor-pointer">SERVICES</a>
+                class="text-sm font-medium text-gray-300 hover:text-white transition-colors cursor-pointer">SERVICIOS</a>
             <a routerLink="/contact" routerLinkActive="text-auto-accent"
-                class="text-sm font-medium text-gray-300 hover:text-white transition-colors cursor-pointer">CONTACT</a>
+                class="text-sm font-medium text-gray-300 hover:text-white transition-colors cursor-pointer">CONTACTO</a>
             <a routerLink="/admin" routerLinkActive="text-auto-accent"
                 class="text-sm font-medium text-gray-300 hover:text-white transition-colors cursor-pointer">ADMIN</a>
         </nav>
@@ -19,19 +20,18 @@
             @if (user()) {
             <a [routerLink]="user()?.email === 'admin@tensor.com' ? '/admin' : '/dashboard'"
                 class="text-sm font-medium text-white hover:text-auto-accent transition-colors cursor-pointer hidden md:block">
-                MY DASHBOARD
+                MI PANEL
             </a>
             <button (click)="logout()"
                 class="bg-auto-carbon border border-white/20 hover:bg-white/10 text-white px-5 py-2 rounded-full text-sm font-bold transition-colors">
-                SIGN OUT
+                SALIR
             </button>
             } @else {
             <a routerLink="/login"
-                class="text-sm font-medium text-gray-300 hover:text-white transition-colors hidden md:block cursor-pointer">SIGN
-                IN</a>
+                class="text-sm font-medium text-gray-300 hover:text-white transition-colors hidden md:block cursor-pointer">ENTRAR</a>
             <a routerLink="/register"
                 class="bg-auto-accent hover:bg-red-600 text-white px-5 py-2 rounded-full text-sm font-bold transition-transform transform hover:scale-105 cursor-pointer">
-                JOIN US
+                REGÍSTRATE
             </a>
             }
         </div>

@@ -2,7 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { BlogService, BlogPost } from '../../../../services/blog';
-import { Hero } from '../../hero/hero';
+import { Hero } from '../../../blog/hero/hero';
 
 @Component({
     selector: 'app-post-detail',

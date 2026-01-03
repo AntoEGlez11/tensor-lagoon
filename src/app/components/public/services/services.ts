@@ -1,11 +1,6 @@
-import { Component, signal } from '@angular/core';
-
-interface ServicePackage {
-  title: string;
-  price: string;
-  features: string[];
-  recommended?: boolean;
-}
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { CrmService, ServiceOffering } from '../../../services/crm';
+import { Unsubscribe } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-services',
@@ -13,25 +8,21 @@ interface ServicePackage {
   templateUrl: './services.html',
   styleUrl: './services.css'
 })
-export class Services {
-  packages = signal<ServicePackage[]>([
-    {
-      title: 'Basic Wash',
-      price: '$25',
-      features: ['Exterior Hand Wash', 'Wheel Cleaning', 'Tire Shine', 'Window Cleaning'],
-      recommended: false
-    },
-    {
-      title: 'Premium Detail',
-      price: '$85',
-      features: ['Basic Wash Included', 'Interior Vacuum', 'Dashboard Wipe Down', 'Leather Conditioning', 'Wax Application'],
-      recommended: true
-    },
-    {
-      title: 'Ceramic Coating',
-      price: '$250',
-      features: ['Paint Correction', 'Clay Bar Treatment', '3-Year Ceramic Protection', 'Water Repellent', 'Enhanced Gloss'],
-      recommended: false
-    }
-  ]);
+export class Services implements OnInit, OnDestroy {
+  private crm = inject(CrmService);
+  private unsub?: Unsubscribe;
+
+  packages = signal<ServiceOffering[]>([]);
+
+  ngOnInit() {
+    this.unsub = this.crm.getServiceOfferings((data) => {
+      // If no data (first load), fallback to initial data or keep empty
+      // For now we just show what's in DB.
+      this.packages.set(data);
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.unsub) this.unsub();
+  }
 }

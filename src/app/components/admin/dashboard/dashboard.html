@@ -10,33 +10,90 @@
         </button>
     </header>
 
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-fade-in">
+        <div class="bg-auto-carbon border border-white/10 rounded-xl p-6">
+            <h3 class="text-gray-400 text-sm mb-1">Ingresos Totales</h3>
+            <p class="text-3xl font-bold text-green-500">${{ totalRevenue() | number }} MXN</p>
+        </div>
+        <div class="bg-auto-carbon border border-white/10 rounded-xl p-6">
+            <h3 class="text-gray-400 text-sm mb-1">Servicios Activos</h3>
+            <p class="text-3xl font-bold text-blue-500">{{ stats().active }}</p>
+            <p class="text-xs text-gray-500 mt-2">{{ stats().pending }} Pendientes</p>
+        </div>
+        <div class="bg-auto-carbon border border-white/10 rounded-xl p-6">
+            <h3 class="text-gray-400 text-sm mb-1">Servicios Completados</h3>
+            <p class="text-3xl font-bold text-white">{{ stats().completed }}</p>
+        </div>
+    </div>
+
     @if (showCreateForm()) {
-    <div class="bg-auto-carbon border border-white/10 rounded-xl p-6 mb-8 animate-fade-in">
-        <h2 class="text-xl font-bold mb-4">Create New Ticket</h2>
+    <div class="bg-auto-carbon border border-white/10 rounded-xl p-6 mb-8 animate-fade-in relative">
         <h2 class="text-xl font-bold mb-4">Create New Ticket</h2>
         <form [formGroup]="createForm" (ngSubmit)="createService()" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Removed direct UID input, now handled via logic or just email if we trust unique emails -->
-            <div class="md:col-span-2">
-                <label class="text-xs text-gray-500 block mb-1">Customer Email</label>
+
+            <!-- Customer Search and Selection -->
+            <div class="md:col-span-2 space-y-2">
+                <label class="text-xs text-gray-500 block">Customer Search (Phone/Name)</label>
                 <div class="flex gap-2">
-                    <input formControlName="customerEmail" type="email" placeholder="customer@example.com"
+                    <input formControlName="customerSearch" type="text"
+                        placeholder="Search by Phone (recommended) or Name..."
                         class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white">
-                    <button type="button" (click)="lookupUser()"
+                    <button type="button" (click)="searchCustomer()"
                         class="bg-blue-600 hover:bg-blue-500 text-white px-4 rounded-lg font-bold text-xs"
                         [disabled]="loadingLookup()">
                         {{ loadingLookup() ? 'Searching...' : 'Search' }}
                     </button>
+                    <button type="button" (click)="openCustomerModal()"
+                        class="bg-green-600 hover:bg-green-500 text-white px-4 rounded-lg font-bold text-xs whitespace-nowrap">
+                        + New
+                    </button>
                 </div>
-                @if (foundUser()) {
-                <div class="text-green-500 text-xs mt-1">✓ User found: {{ foundUser()?.email }} ({{ foundUser()?.uid }})
+
+                <!-- Search Results -->
+                @if (foundUsers().length > 0 && !selectedUser()) {
+                <div class="bg-black/40 border border-white/10 rounded-lg p-2 max-h-40 overflow-y-auto">
+                    <p class="text-xs text-gray-400 mb-2 px-2">Select a customer:</p>
+                    @for (user of foundUsers(); track user.uid) {
+                    <button type="button" (click)="selectUser(user)"
+                        class="w-full text-left flex justify-between items-center p-2 hover:bg-white/10 rounded text-sm transition-colors">
+                        <span>
+                            <span class="font-bold text-white">{{ user.name || 'No Name' }}</span>
+                            <span class="text-gray-400 ml-2">{{ user.phone }}</span>
+                        </span>
+                        <span class="text-xs text-auto-accent">Select</span>
+                    </button>
+                    }
                 </div>
-                } @else if (lookupAttempted()) {
-                <div class="text-red-500 text-xs mt-1">✗ User not found</div>
+                }
+
+                <!-- Selected User Display -->
+                @if (selectedUser()) {
+                <div
+                    class="bg-green-500/10 border border-green-500/30 rounded-lg p-3 flex justify-between items-center">
+                    <div>
+                        <div class="text-sm font-bold text-green-400">✓ Selected Customer</div>
+                        <div class="text-white">{{ selectedUser().name }}</div>
+                        <div class="text-xs text-gray-400">{{ selectedUser().phone }} | {{ selectedUser().email || 'No
+                            Email' }}</div>
+                    </div>
+                    <button type="button" (click)="selectedUser.set(null)"
+                        class="text-xs text-red-400 hover:text-red-300">Change</button>
+                </div>
+                } @else if (lookupAttempted() && foundUsers().length === 0) {
+                <div class="text-red-400 text-xs">✗ No customers found. Use "+ New" to create one.</div>
                 }
             </div>
 
-            <input formControlName="vehicle" type="text" placeholder="Vehicle (e.g. Ford Mustang)"
-                class="bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white">
+            <div class="space-y-1">
+                <input formControlName="vehicle" type="text" placeholder="Vehicle (e.g. Ford Mustang)"
+                    class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white">
+            </div>
+
+            <div class="space-y-1">
+                <input formControlName="licensePlate" type="text" placeholder="License Plate (e.g. ABC-123)"
+                    class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white uppercase">
+            </div>
 
             <select formControlName="package"
                 class="bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white">
@@ -48,10 +105,46 @@
             <input formControlName="price" type="number" placeholder="Price"
                 class="bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white">
 
-            <button [disabled]="createForm.invalid" type="submit"
-                class="bg-white text-black font-bold rounded-lg px-4 py-2 hover:bg-gray-200 transition-colors disabled:opacity-50">Create
-                Ticket</button>
+            <div class="md:col-span-2">
+                <button [disabled]="createForm.invalid || !selectedUser()" type="submit"
+                    class="w-full bg-white text-black font-bold rounded-lg px-4 py-3 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    Create Service Ticket
+                </button>
+            </div>
         </form>
+
+        <!-- Customer Modal Overlay -->
+        @if (showCustomerModal()) {
+        <div
+            class="absolute inset-0 bg-black/90 z-50 flex items-center justify-center rounded-xl backdrop-blur-sm p-4 animate-fade-in">
+            <div class="bg-auto-carbon w-full max-w-md p-6 rounded-lg border border-white/20 shadow-2xl">
+                <h3 class="text-lg font-bold text-white mb-4">Quick Add Customer</h3>
+                <form [formGroup]="customerForm" (ngSubmit)="createNewCustomer()" class="space-y-3">
+                    <div>
+                        <label class="text-xs text-gray-400">Phone Number (*)</label>
+                        <input formControlName="phone" type="tel"
+                            class="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-white">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400">Full Name (*)</label>
+                        <input formControlName="name" type="text"
+                            class="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-white">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400">Email (Optional)</label>
+                        <input formControlName="email" type="email"
+                            class="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-white">
+                    </div>
+                    <div class="flex gap-3 pt-2">
+                        <button type="button" (click)="showCustomerModal.set(false)"
+                            class="flex-1 bg-gray-700 text-white py-2 rounded">Cancel</button>
+                        <button type="submit" [disabled]="customerForm.invalid"
+                            class="flex-1 bg-auto-accent text-white py-2 rounded font-bold">Save & Select</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        }
     </div>
     }
 
@@ -73,9 +166,16 @@
             <tbody class="divide-y divide-white/5">
                 @for (ticket of services(); track ticket.id) {
                 <tr class="hover:bg-white/5 transition-colors">
-                    <td class="px-6 py-4 font-bold">{{ ticket.vehicle }}</td>
+                    <td class="px-6 py-4">
+                        <div class="font-bold text-white">{{ ticket.vehicle }}</div>
+                        <div class="text-xs text-gray-400 uppercase tracking-widest">{{ ticket.licensePlate || 'NO
+                            PLATE' }}</div>
+                    </td>
                     <td class="px-6 py-4">{{ ticket.package }}</td>
-                    <td class="px-6 py-4 text-gray-400">{{ ticket.customerEmail }}</td>
+                    <td class="px-6 py-4">
+                        <div class="text-white">{{ ticket.customerName || 'Unknown' }}</div>
+                        <div class="text-xs text-gray-500">{{ ticket.customerPhone }}</div>
+                    </td>
                     <td class="px-6 py-4">
                         <span class="px-2 py-1 rounded text-xs uppercase font-bold"
                             [class.bg-yellow-500_20]="ticket.status === 'pending'"

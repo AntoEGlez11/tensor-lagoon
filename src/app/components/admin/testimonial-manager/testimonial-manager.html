@@ -1,0 +1,109 @@
+<div class="space-y-6">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h2 class="text-3xl font-bold text-white mb-2">Testimonios</h2>
+            <p class="text-gray-400">Gestiona las opiniones de los clientes en la página de inicio.</p>
+        </div>
+        <button (click)="startEdit()"
+            class="bg-auto-accent hover:bg-red-600 text-white px-6 py-2 rounded-lg font-bold transition-all flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Nuevo Testimonio
+        </button>
+    </div>
+
+    @if (showCreateForm()) {
+    <div class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-auto-carbon border border-white/10 rounded-xl p-8 max-w-lg w-full">
+            <h3 class="text-2xl font-bold text-white mb-6">
+                {{ editingId() ? 'Editar Testimonio' : 'Nuevo Testimonio' }}
+            </h3>
+
+            <form [formGroup]="form" (ngSubmit)="save()" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Nombre del Cliente</label>
+                    <input type="text" formControlName="name"
+                        class="w-full bg-auto-black border border-white/10 rounded-lg px-4 py-3 text-white focus:border-auto-accent focus:outline-none"
+                        placeholder="Ej. Juan Pérez">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Rol / Auto</label>
+                    <input type="text" formControlName="role"
+                        class="w-full bg-auto-black border border-white/10 rounded-lg px-4 py-3 text-white focus:border-auto-accent focus:outline-none"
+                        placeholder="Ej. Propietario de BMW M3">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Comentario</label>
+                    <textarea formControlName="text" rows="4"
+                        class="w-full bg-auto-black border border-white/10 rounded-lg px-4 py-3 text-white focus:border-auto-accent focus:outline-none"
+                        placeholder="Escribe la opinión del cliente..."></textarea>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t border-white/10">
+                    <button type="button" (click)="cancelEdit()"
+                        class="px-6 py-2 text-gray-400 hover:text-white font-medium transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" [disabled]="form.invalid"
+                        class="bg-auto-accent hover:bg-red-600 disabled:opacity-50 text-white px-6 py-2 rounded-lg font-bold transition-all">
+                        Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    }
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (item of testimonials(); track item.id) {
+        <div
+            class="bg-auto-carbon border border-white/10 rounded-xl p-6 relative group hover:border-auto-accent transition-colors">
+
+            <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button (click)="startEdit(item)" class="p-2 bg-gray-700 rounded-lg hover:bg-blue-600 text-white">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
+                        </path>
+                    </svg>
+                </button>
+                <button (click)="delete(item.id!)" class="p-2 bg-gray-700 rounded-lg hover:bg-red-600 text-white">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="mb-4">
+                <svg class="w-8 h-8 text-auto-accent opacity-50" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                        d="M14.017 21L14.017 18C14.017 16.8954 14.9124 16 16.017 16H19.017C19.5693 16 20.017 15.5523 20.017 15V9C20.017 8.44772 19.5693 8 19.017 8H15.017C14.4647 8 14.017 8.44772 14.017 9V11C14.017 11.5523 13.5693 12 13.017 12H12.017V5H22.017V15C22.017 18.3137 19.3307 21 16.017 21H14.017ZM5.0166 21L5.0166 18C5.0166 16.8954 5.91203 16 7.0166 16H10.0166C10.5689 16 11.0166 15.5523 11.0166 15V9C11.0166 8.44772 10.5689 8 10.0166 8H6.0166C5.46432 8 5.0166 8.44772 5.0166 9V11C5.0166 11.5523 4.56889 12 4.0166 12H3.0166V5H13.0166V15C13.0166 18.3137 10.3303 21 7.0166 21H5.0166Z">
+                    </path>
+                </svg>
+            </div>
+
+            <p class="text-gray-300 italic mb-4 text-sm line-clamp-4">"{{ item.text }}"</p>
+
+            <div class="flex items-center gap-3 border-t border-white/10 pt-4">
+                <div
+                    class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-xs font-bold text-white">
+                    {{ item.name.charAt(0) }}
+                </div>
+                <div>
+                    <h4 class="text-white font-bold text-sm">{{ item.name }}</h4>
+                    <p class="text-xs text-auto-accent">{{ item.role }}</p>
+                </div>
+            </div>
+        </div>
+        }
+
+        @if (testimonials().length === 0) {
+        <div class="col-span-full py-12 text-center text-gray-500 border border-dashed border-white/10 rounded-xl">
+            No hay testimonios aún.
+        </div>
+        }
+    </div>
+</div>

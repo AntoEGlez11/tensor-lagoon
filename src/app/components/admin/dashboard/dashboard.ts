@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CrmService, ServiceTicket } from '../../../services/crm';
@@ -15,26 +15,55 @@ export class Dashboard implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
 
   services = signal<ServiceTicket[]>([]);
+
+  // Computed Stats
+  totalRevenue = computed(() =>
+    this.services()
+      .filter(s => s.status === 'completed')
+      .reduce((acc, curr) => acc + (curr.price || 0), 0)
+  );
+
+  stats = computed(() => {
+    const s = this.services();
+    return {
+      active: s.filter(t => t.status !== 'completed').length,
+      completed: s.filter(t => t.status === 'completed').length,
+      pending: s.filter(t => t.status === 'pending').length
+    };
+  });
+
+  recentServices = computed(() =>
+    this.services().slice(0, 5)
+  );
+
   showCreateForm = signal(false);
+  showCustomerModal = signal(false); // Controls the modal visibility
 
   // Lookup state
   loadingLookup = signal(false);
   lookupAttempted = signal(false);
-  foundUser = signal<any>(null);
+  foundUsers = signal<any[]>([]); // Array for results
+  selectedUser = signal<any>(null); // The final selected user
 
-  // Real-time listener unsubscribe function
+  // Customer Form (Modal)
+  customerForm = this.fb.nonNullable.group({
+    phone: ['', Validators.required],
+    name: ['', Validators.required],
+    email: ['', Validators.email] // Optional
+  });
+
   private unsub?: Unsubscribe;
 
+  // Updated Service Form
   createForm = this.fb.nonNullable.group({
-    customerEmail: ['', [Validators.required, Validators.email]],
-    // customerId removed from manual input
+    customerSearch: ['', Validators.required], // Search term
     vehicle: ['', Validators.required],
+    licensePlate: ['', Validators.required], // New field
     package: ['Basic Wash', Validators.required],
     price: [25, [Validators.required, Validators.min(0)]]
   });
 
   ngOnInit() {
-    // Subscribe to all services
     this.unsub = this.crm.getAllServices((data) => {
       this.services.set(data);
     });
@@ -44,49 +73,93 @@ export class Dashboard implements OnInit, OnDestroy {
     if (this.unsub) this.unsub();
   }
 
-  async lookupUser() {
-    const email = this.createForm.get('customerEmail')?.value;
-    if (!email) return;
+  // New Search Logic
+  async searchCustomer() {
+    const term = this.createForm.get('customerSearch')?.value;
+    if (!term || term.length < 3) return;
 
     this.loadingLookup.set(true);
     this.lookupAttempted.set(false);
-    this.foundUser.set(null);
+    this.foundUsers.set([]);
+    this.selectedUser.set(null);
 
     try {
-      // Query users by email
-      const user = await this.crm.getUserByEmail(email);
+      const users = await this.crm.searchCustomers(term);
       this.loadingLookup.set(false);
       this.lookupAttempted.set(true);
-
-      if (user) {
-        this.foundUser.set(user);
-      }
+      this.foundUsers.set(users);
     } catch (err) {
       console.error(err);
       this.loadingLookup.set(false);
     }
   }
 
+  selectUser(user: any) {
+    this.selectedUser.set(user);
+    this.foundUsers.set([]); // Clear results
+    this.lookupAttempted.set(false);
+    // Fix: Fill search input so the form is valid
+    this.createForm.patchValue({ customerSearch: user.phone || user.name });
+  }
+
+  openCustomerModal() {
+    // Pre-fill phone if search term looks like a phone number
+    const term = this.createForm.get('customerSearch')?.value || '';
+    if (!isNaN(Number(term))) {
+      this.customerForm.patchValue({ phone: term });
+    }
+    this.showCustomerModal.set(true);
+  }
+
+  async createNewCustomer() {
+    if (this.customerForm.invalid) return;
+
+    const { name, phone, email } = this.customerForm.getRawValue();
+
+    try {
+      const docRef = await this.crm.createCustomer({ name, phone, email });
+      const newUser = { uid: docRef.id, name, phone, email };
+
+      this.selectedUser.set(newUser);
+      this.showCustomerModal.set(false);
+      this.customerForm.reset();
+      // Fix: Fill search input so the form is valid
+      this.createForm.patchValue({ customerSearch: newUser.phone || newUser.name });
+    } catch (err) {
+      console.error(err);
+      alert('Error creating customer');
+    }
+  }
+
   async createService() {
-    if (this.createForm.invalid || !this.foundUser()) {
-      if (!this.foundUser()) alert('Please search and select a valid user first');
+    if (this.createForm.invalid || !this.selectedUser()) {
+      if (!this.selectedUser()) alert('Please select a customer first');
       return;
     }
 
     try {
+      const form = this.createForm.getRawValue();
+      const user = this.selectedUser();
+
       const ticket = {
-        vehicle: this.createForm.get('vehicle')?.value!,
-        package: this.createForm.get('package')?.value!,
-        price: this.createForm.get('price')?.value!,
-        customerEmail: this.foundUser().email,
-        customerId: this.foundUser().uid,
+        vehicle: form.vehicle,
+        licensePlate: form.licensePlate,
+        package: form.package,
+        price: form.price,
+        customerEmail: user.email || '', // Optional
+        customerPhone: user.phone || 'N/A',
+        customerName: user.name || 'Unknown',
+        customerId: user.uid,
         status: 'pending' as const
       };
 
       await this.crm.createService(ticket);
       this.showCreateForm.set(false);
+
+      // Reset logic
       this.createForm.reset({ package: 'Basic Wash', price: 25 });
-      this.foundUser.set(null);
+      this.selectedUser.set(null);
+      this.foundUsers.set([]);
       this.lookupAttempted.set(false);
     } catch (err) {
       console.error(err);
