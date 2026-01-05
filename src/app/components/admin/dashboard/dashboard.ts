@@ -1,7 +1,8 @@
-import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { CrmService, ServiceTicket } from '../../../services/crm';
+import { CrmService, ServiceTicket, UserProfile } from '../../../services/crm';
+import { ToastService } from '../../../services/toast';
 import { Unsubscribe } from '@angular/fire/firestore';
 
 @Component({
@@ -9,10 +10,12 @@ import { Unsubscribe } from '@angular/fire/firestore';
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Dashboard implements OnInit, OnDestroy {
   private crm = inject(CrmService);
   private fb = inject(FormBuilder);
+  private toast = inject(ToastService);
 
   services = signal<ServiceTicket[]>([]);
 
@@ -42,8 +45,8 @@ export class Dashboard implements OnInit, OnDestroy {
   // Lookup state
   loadingLookup = signal(false);
   lookupAttempted = signal(false);
-  foundUsers = signal<any[]>([]); // Array for results
-  selectedUser = signal<any>(null); // The final selected user
+  foundUsers = signal<UserProfile[]>([]); // Array for results
+  selectedUser = signal<UserProfile | null>(null); // The final selected user
 
   // Customer Form (Modal)
   customerForm = this.fb.nonNullable.group({
@@ -91,10 +94,11 @@ export class Dashboard implements OnInit, OnDestroy {
     } catch (err) {
       console.error(err);
       this.loadingLookup.set(false);
+      this.toast.show('Search failed', 'error');
     }
   }
 
-  selectUser(user: any) {
+  selectUser(user: UserProfile) {
     this.selectedUser.set(user);
     this.foundUsers.set([]); // Clear results
     this.lookupAttempted.set(false);
@@ -118,30 +122,44 @@ export class Dashboard implements OnInit, OnDestroy {
 
     try {
       const docRef = await this.crm.createCustomer({ name, phone, email });
-      const newUser = { uid: docRef.id, name, phone, email };
+      // Create a complete profile object for selection
+      const newUser: UserProfile = {
+        uid: docRef.id,
+        name,
+        phone,
+        email,
+        role: 'customer' // Default role
+      };
 
       this.selectedUser.set(newUser);
       this.showCustomerModal.set(false);
       this.customerForm.reset();
       // Fix: Fill search input so the form is valid
       this.createForm.patchValue({ customerSearch: newUser.phone || newUser.name });
+      this.toast.show('Customer created successfully', 'success');
     } catch (err) {
       console.error(err);
-      alert('Error creating customer');
+      this.toast.show('Error creating customer', 'error');
     }
   }
 
   async createService() {
     if (this.createForm.invalid || !this.selectedUser()) {
-      if (!this.selectedUser()) alert('Please select a customer first');
+      if (!this.selectedUser()) this.toast.show('Please select a customer first', 'error');
       return;
     }
 
     try {
-      const form = this.createForm.getRawValue();
       const user = this.selectedUser();
 
-      const ticket = {
+      if (!user || !user.uid) {
+        this.toast.show('Please select a valid customer', 'error');
+        return;
+      }
+
+      const form = this.createForm.getRawValue();
+
+      const ticket: Omit<ServiceTicket, 'id' | 'createdAt'> = {
         vehicle: form.vehicle,
         licensePlate: form.licensePlate,
         package: form.package,
@@ -150,7 +168,7 @@ export class Dashboard implements OnInit, OnDestroy {
         customerPhone: user.phone || 'N/A',
         customerName: user.name || 'Unknown',
         customerId: user.uid,
-        status: 'pending' as const
+        status: 'pending'
       };
 
       await this.crm.createService(ticket);

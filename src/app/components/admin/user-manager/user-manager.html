@@ -37,18 +37,33 @@
                             {{ user.createdAt?.seconds ? (user.createdAt.seconds * 1000 | date:'mediumDate') : 'N/A' }}
                         </td>
                         <td class="px-6 py-4 text-right">
-                            @if (user.uid !== currentUser()?.uid) {
-                            <button (click)="toggleRole(user)"
-                                class="text-xs font-bold px-3 py-1 rounded border transition-colors"
-                                [class.border-red-500]="user.role === 'admin'"
-                                [class.text-red-500]="user.role === 'admin'"
-                                [class.hover:bg-red-500/10]="user.role === 'admin'"
-                                [class.border-auto-accent]="user.role === 'customer'"
-                                [class.text-auto-accent]="user.role === 'customer'"
-                                [class.hover:bg-auto-accent/10]="user.role === 'customer'">
-                                {{ user.role === 'admin' ? 'Revoke Admin' : 'Make Admin' }}
-                            </button>
-                            }
+                            <div class="flex gap-2 justify-end">
+                                <button (click)="openDetailPanel(user)" aria-label="View User Details"
+                                    class="text-xs font-bold px-3 py-1 rounded border border-gray-600 hover:bg-white/10 text-white transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </button>
+                                <button (click)="openEditModal(user)"
+                                    class="text-xs font-bold px-3 py-1 rounded border border-gray-600 hover:bg-white/10 text-white transition-colors">
+                                    Edit
+                                </button>
+                                @if (user.uid !== currentUser()?.uid) {
+                                <button (click)="toggleRole(user)"
+                                    class="text-xs font-bold px-3 py-1 rounded border transition-colors"
+                                    [class.border-red-500]="user.role === 'admin'"
+                                    [class.text-red-500]="user.role === 'admin'"
+                                    [class.hover:bg-red-500/10]="user.role === 'admin'"
+                                    [class.border-auto-accent]="user.role === 'customer'"
+                                    [class.text-auto-accent]="user.role === 'customer'"
+                                    [class.hover:bg-auto-accent/10]="user.role === 'customer'">
+                                    {{ user.role === 'admin' ? 'Revoke' : 'Promote' }}
+                                </button>
+                                }
+                            </div>
                         </td>
                     </tr>
                     }
@@ -62,4 +77,231 @@
         </div>
         }
     </div>
+
+    <!-- User Detail Side Panel -->
+    @if (isDetailPanelOpen() && viewedUser(); as u) {
+    <div class="fixed inset-0 z-[60] overflow-hidden" aria-labelledby="slide-over-title" role="dialog"
+        aria-modal="true">
+        <div class="absolute inset-0 overflow-hidden">
+            <!-- Backdrop -->
+            <div class="absolute inset-0 bg-black/60 transition-opacity" (click)="closeDetailPanel()"></div>
+
+            <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+                <div
+                    class="pointer-events-auto w-screen max-w-md transform transition ease-in-out duration-500 sm:duration-700">
+                    <div
+                        class="flex h-full flex-col overflow-y-scroll bg-auto-carbon border-l border-white/10 shadow-2xl">
+                        <!-- Header -->
+                        <div class="px-4 py-6 sm:px-6 border-b border-white/5 bg-black/20">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <h2 class="text-xl font-bold leading-6 text-white" id="slide-over-title">{{ u.name
+                                        || 'User Profile' }}</h2>
+                                    <p class="mt-1 text-sm text-gray-400">UID: {{ u.uid }}</p>
+                                </div>
+                                <div class="ml-3 flex h-7 items-center">
+                                    <button type="button" (click)="closeDetailPanel()"
+                                        class="relative rounded-md text-gray-400 hover:text-white focus:outline-none">
+                                        <span class="absolute -inset-2.5"></span>
+                                        <span class="sr-only">Close panel</span>
+                                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                            stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="relative flex-1 px-4 py-6 sm:px-6 space-y-8">
+
+                            <!-- Role Badge -->
+                            <div>
+                                <span
+                                    class="px-3 py-1 rounded text-sm font-bold uppercase tracking-wider inline-flex items-center gap-2"
+                                    [class.bg-auto-accent/20]="u.role === 'admin'"
+                                    [class.text-auto-accent]="u.role === 'admin'"
+                                    [class.bg-blue-500/10]="u.role === 'customer'"
+                                    [class.text-blue-400]="u.role === 'customer'">
+                                    <div class="w-2 h-2 rounded-full bg-current"></div>
+                                    {{ u.role }}
+                                </span>
+                            </div>
+
+                            <!-- Contact Info -->
+                            <div>
+                                <h3 class="text-sm font-medium text-auto-accent uppercase tracking-wider mb-3">Contact
+                                    Information</h3>
+                                <div class="grid grid-cols-1 gap-4 bg-white/5 rounded-lg p-4 border border-white/5">
+                                    <div>
+                                        <label class="block text-xs text-gray-400 mb-1">Email</label>
+                                        <div class="text-white">{{ u.email }}</div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-gray-400 mb-1">Phone</label>
+                                        <div class="text-white font-mono">{{ u.phone || 'Not provided' }}</div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-gray-400 mb-1">Address</label>
+                                        <div class="text-white">{{ u.address || 'Not provided' }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Vehicle Info -->
+                            <div>
+                                <h3 class="text-sm font-medium text-auto-accent uppercase tracking-wider mb-3">Vehicle
+                                    Details</h3>
+                                <div
+                                    class="bg-gradient-to-br from-white/10 to-transparent rounded-lg p-4 border border-white/5 relative overflow-hidden">
+                                    <div
+                                        class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-auto-accent/10 rounded-full blur-xl">
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-4 relative z-10">
+                                        <div>
+                                            <label class="block text-xs text-gray-400 mb-1">Make/Model</label>
+                                            <div class="text-lg font-bold text-white">{{ u.vehicleModel || 'N/A' }}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-gray-400 mb-1">Year</label>
+                                            <div class="text-lg font-bold text-white">{{ u.vehicleYear || 'N/A' }}</div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-gray-400 mb-1">Color</label>
+                                            <div class="text-white flex items-center gap-2">
+                                                {{ u.vehicleColor || 'N/A' }}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-gray-400 mb-1">License Plates</label>
+                                            <div
+                                                class="text-white font-mono bg-black/30 px-2 py-1 rounded inline-block">
+                                                {{ u.licensePlates?.length ? u.licensePlates : 'No plates' }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Meta -->
+                            <div class="border-t border-white/5 pt-4">
+                                <div class="flex justify-between text-xs text-gray-500">
+                                    <span>Joined</span>
+                                    <span>{{ u.createdAt?.seconds ? (u.createdAt.seconds * 1000 | date:'longDate') :
+                                        'Unknown' }}</span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Footer Actions -->
+                        <div class="flex-shrink-0 border-t border-white/5 bg-black/20 px-4 py-6 sm:px-6">
+                            <div class="flex justify-end gap-3">
+                                <button type="button" (click)="closeDetailPanel()"
+                                    class="rounded-md bg-transparent px-3 py-2 text-sm font-semibold text-gray-400 hover:text-white border border-gray-600 hover:bg-white/5">
+                                    Close
+                                </button>
+                                <button type="button" (click)="openEditModal(u)"
+                                    class="inline-flex justify-center rounded-md bg-auto-accent px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                                    Edit Profile
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+
+    <!-- Edit Modal (Existing) -->
+    @if (isEditModalOpen()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div class="bg-auto-carbon border border-white/10 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="px-6 py-4 border-b border-white/5 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-white">Edit User</h3>
+                <button (click)="closeEditModal()" class="text-gray-400 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+
+            <form [formGroup]="editForm" (ngSubmit)="saveUser()" class="p-6 space-y-6">
+                <!-- Personal Info -->
+                <div class="space-y-4">
+                    <h4 class="text-auto-accent font-bold uppercase text-xs tracking-wider">Personal Information</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 mb-1">Full Name</label>
+                            <input type="text" formControlName="name"
+                                class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-auto-accent transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 mb-1">Phone</label>
+                            <input type="tel" formControlName="phone"
+                                class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-auto-accent transition-colors">
+                        </div>
+                        <div class="col-span-1 md:col-span-2">
+                            <label class="block text-xs font-bold text-gray-400 mb-1">Address</label>
+                            <input type="text" formControlName="address"
+                                class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-auto-accent transition-colors">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vehicle Info -->
+                <div class="space-y-4">
+                    <h4 class="text-auto-accent font-bold uppercase text-xs tracking-wider">Vehicle Details</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 mb-1">Model</label>
+                            <input type="text" formControlName="vehicleModel" placeholder="e.g. BMW X5"
+                                class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-auto-accent transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 mb-1">Year</label>
+                            <input type="text" formControlName="vehicleYear" placeholder="e.g. 2023"
+                                class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-auto-accent transition-colors">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 mb-1">Color</label>
+                            <input type="text" formControlName="vehicleColor" placeholder="e.g. Black"
+                                class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-auto-accent transition-colors">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Permissions -->
+                <div class="space-y-4">
+                    <h4 class="text-auto-accent font-bold uppercase text-xs tracking-wider">Permissions</h4>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 mb-1">Role</label>
+                        <select formControlName="role"
+                            class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-auto-accent transition-colors">
+                            <option value="customer">Customer</option>
+                            <option value="admin">Administrator</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-6 border-t border-white/5">
+                    <button type="button" (click)="closeEditModal()"
+                        class="px-4 py-2 text-sm font-bold text-gray-400 hover:text-white transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" [disabled]="editForm.invalid"
+                        class="px-6 py-2 bg-auto-accent hover:bg-red-600 text-white text-sm font-bold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    }
 </div>

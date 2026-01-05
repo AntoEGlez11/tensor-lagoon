@@ -1,11 +1,11 @@
 export const environment = {
     production: true,
     firebase: {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_PROJECT.firebaseapp.com",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_PROJECT.firebasestorage.app",
-        messagingSenderId: "YOUR_SENDER_ID",
-        appId: "YOUR_APP_ID"
+        apiKey: "AIzaSyBFpYi_ASc_ji3O-chIrggcCMRxOdrpGDE",
+        authDomain: "car-wash-app-6b0d2.firebaseapp.com",
+        projectId: "car-wash-app-6b0d2",
+        storageBucket: "car-wash-app-6b0d2.firebasestorage.app",
+        messagingSenderId: "315341980530",
+        appId: "1:315341980530:web:2e8d999c6d38e5d57753eb"
     }
 };

@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators, FormArray } from '@angular/forms';
 import { CrmService, ServiceOffering } from '../../../services/crm';
@@ -8,7 +8,8 @@ import { Unsubscribe } from '@angular/fire/firestore';
 @Component({
     selector: 'app-service-manager',
     imports: [CommonModule, ReactiveFormsModule],
-    templateUrl: './service-manager.html'
+    templateUrl: './service-manager.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ServiceManager implements OnInit, OnDestroy {
     private crm = inject(CrmService);

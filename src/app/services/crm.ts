@@ -36,6 +36,10 @@ export interface UserProfile {
     phone: string;  // Primary identifier
     name: string;
     role: 'admin' | 'customer';
+    address?: string | null;       // New
+    vehicleModel?: string | null;  // New
+    vehicleYear?: string | null;   // New
+    vehicleColor?: string | null;  // New
     licensePlates?: string[];
     createdAt?: any;
 }
@@ -46,6 +50,7 @@ export interface UserProfile {
 export class CrmService {
     private firestore = inject(Firestore);
     private servicesCollection = collection(this.firestore, 'services');
+    // ... (rest of class)
 
     // Create a new service ticket
     async createService(ticket: Omit<ServiceTicket, 'id' | 'createdAt'>) {
@@ -66,12 +71,18 @@ export class CrmService {
     getCustomerServices(customerId: string, callback: (services: ServiceTicket[]) => void) {
         const q = query(
             this.servicesCollection,
-            where('customerId', '==', customerId),
-            orderBy('createdAt', 'desc')
+            where('customerId', '==', customerId)
+            // Removed orderBy to avoid index requirement for now
         );
 
         return onSnapshot(q, (snapshot) => {
             const services = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ServiceTicket));
+            // Client-side sort
+            services.sort((a, b) => {
+                const tA = a.createdAt?.seconds || 0;
+                const tB = b.createdAt?.seconds || 0;
+                return tB - tA;
+            });
             callback(services);
         });
     }
@@ -95,10 +106,15 @@ export class CrmService {
         await updateDoc(docRef, { status });
     }
 
+    // ... existing methods ...
+
     // --- User Management ---
 
     getAllUsers(onChange: (users: UserProfile[]) => void): Unsubscribe {
         const usersRef = collection(this.firestore, 'users');
+        // Client-side sort to be safe/consistent, though simplistic query might be fine. 
+        // But to avoid "Index" issues just in case of composite requirements (though none here), straightforward is best.
+        // Actually, single field sort is safe.
         const q = query(usersRef, orderBy('createdAt', 'desc'));
 
         return onSnapshot(q, (snapshot) => {
@@ -113,6 +129,11 @@ export class CrmService {
     async updateUserRole(uid: string, role: 'admin' | 'customer') {
         const docRef = doc(this.firestore, 'users', uid);
         await updateDoc(docRef, { role });
+    }
+
+    async updateUserProfile(uid: string, data: Partial<UserProfile>) {
+        const docRef = doc(this.firestore, 'users', uid);
+        await updateDoc(docRef, data);
     }
 
     // Lookup user by Phone or Name (Simple client-side filter for now as Firestore fuzzy search is limited)

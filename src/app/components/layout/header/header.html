@@ -13,12 +13,10 @@
                 class="text-sm font-medium text-gray-300 hover:text-white transition-colors cursor-pointer">SERVICIOS</a>
             <a routerLink="/contact" routerLinkActive="text-auto-accent"
                 class="text-sm font-medium text-gray-300 hover:text-white transition-colors cursor-pointer">CONTACTO</a>
-            <a routerLink="/admin" routerLinkActive="text-auto-accent"
-                class="text-sm font-medium text-gray-300 hover:text-white transition-colors cursor-pointer">ADMIN</a>
         </nav>
         <div class="flex items-center space-x-4">
             @if (user()) {
-            <a [routerLink]="user()?.email === 'admin@tensor.com' ? '/admin' : '/dashboard'"
+            <a [routerLink]="isAdmin() ? '/admin' : '/dashboard'"
                 class="text-sm font-medium text-white hover:text-auto-accent transition-colors cursor-pointer hidden md:block">
                 MI PANEL
             </a>

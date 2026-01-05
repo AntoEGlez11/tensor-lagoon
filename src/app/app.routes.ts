@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { PostList } from './components/blog/post-list/post-list';
 import { authGuard } from './guards/auth';
-
+import { customerGuard } from './guards/customer'; // New
 import { adminGuard } from './guards/admin';
 
 export const routes: Routes = [
@@ -32,7 +32,11 @@ export const routes: Routes = [
         loadComponent: () => import('./components/auth/register/register').then(m => m.Register)
     },
     {
-        path: 'dashboard',
-        loadComponent: () => import('./components/user/dashboard/dashboard').then(m => m.Dashboard)
+        path: '',
+        loadComponent: () => import('./components/user/user-layout/user-layout').then(m => m.UserLayout),
+        canActivate: [authGuard, customerGuard],
+        children: [
+            { path: 'dashboard', loadComponent: () => import('./components/user/dashboard/dashboard').then(m => m.Dashboard) },
+        ]
     }
 ];

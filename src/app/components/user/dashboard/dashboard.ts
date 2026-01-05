@@ -1,4 +1,6 @@
 import { Component, inject, signal, computed, OnDestroy, effect } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth';
 import { DatePipe } from '@angular/common';
 import { CrmService, ServiceTicket } from '../../../services/crm';
@@ -6,7 +8,7 @@ import { Unsubscribe } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-user-dashboard',
-  imports: [],
+  imports: [CommonModule, RouterLink],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
 })

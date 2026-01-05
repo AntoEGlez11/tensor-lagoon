@@ -1,6 +1,6 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal, computed, effect } from '@angular/core';
 import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, user, User } from '@angular/fire/auth';
-import { Firestore, doc, setDoc, getDoc, collection, query, where, getDocs, writeBatch } from '@angular/fire/firestore';
+import { Firestore, doc, setDoc, getDoc, collection, query, where, getDocs, writeBatch, onSnapshot } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 
@@ -13,32 +13,47 @@ export class AuthService {
   private router = inject(Router);
 
   // Expose user state as a signal
-  user = toSignal(user(this.auth), { initialValue: null });
+  // Remove initialValue to let it start as undefined (loading state)
+  user = toSignal(user(this.auth));
 
-  constructor() { }
+  // Expose extended profile state
+  userProfile = signal<any>(undefined);
+
+  // Computed helper for templates/guards
+  isAdmin = computed(() => this.userProfile()?.role === 'admin');
+
+  constructor() {
+    // Effect to sync profile whenever user changes
+    effect(() => {
+      const u = this.user();
+
+      // If u is undefined, Auth is still initializing. Do nothing.
+      if (u === undefined) return;
+
+      if (u) {
+        const docRef = doc(this.firestore, 'users', u.uid);
+        // Real-time listener for profile changes (role updates, etc)
+        onSnapshot(docRef, (snap) => {
+          if (snap.exists()) {
+            this.userProfile.set(snap.data());
+          } else {
+            this.userProfile.set(null);
+          }
+        });
+      } else {
+        // User is definitely logged out (null)
+        this.userProfile.set(null);
+      }
+    });
+  }
 
   async login(email: string, pass: string) {
     try {
-      const credential = await signInWithEmailAndPassword(this.auth, email, pass);
-      const uid = credential.user.uid;
-
-      // Fetch user role
-      const docRef = doc(this.firestore, 'users', uid);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        const userData = docSnap.data();
-        const role = userData['role'];
-
-        if (role === 'admin') {
-          this.router.navigate(['/admin']);
-        } else {
-          this.router.navigate(['/dashboard']);
-        }
-      } else {
-        // Fallback if no profile exists (shouldn't happen for registered users)
-        this.router.navigate(['/dashboard']);
-      }
+      await signInWithEmailAndPassword(this.auth, email, pass);
+      // Navigation is now handled by Guards or Component logic based on role
+      // But we can do a quick check here if we want immediate feedback
+      // Waiting for the effect to fire might be slightly async, so manual routing in Login component is often better.
+      // For now, let's leave generic routing to the component calling this.
     } catch (err: any) {
       console.error('Login Error:', err);
       throw err;
@@ -108,6 +123,7 @@ export class AuthService {
 
   async logout() {
     await signOut(this.auth);
+    this.userProfile.set(null); // Clear immediately
     this.router.navigate(['/login']);
   }
 
