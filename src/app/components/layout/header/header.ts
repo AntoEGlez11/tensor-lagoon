@@ -1,4 +1,4 @@
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../services/auth';
 
@@ -14,7 +14,18 @@ export class Header {
   user = this.auth.user;
   isAdmin = this.auth.isAdmin;
 
+  isOpen = signal(false);
+
+  toggleMenu() {
+    this.isOpen.update(v => !v);
+  }
+
+  closeMenu() {
+    this.isOpen.set(false);
+  }
+
   logout() {
     this.auth.logout();
+    this.closeMenu();
   }
 }
