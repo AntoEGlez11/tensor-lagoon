@@ -32,6 +32,9 @@ export interface Appointment {
     end: Timestamp;
     status: AppointmentStatus;
     notes?: string;
+    // New fields
+    price?: number;
+    rejectionReason?: string;
     createdAt: Timestamp;
 }
 
@@ -109,6 +112,12 @@ export class AppointmentService {
         const docRef = doc(this.firestore, this.collectionName, id);
         const data: any = { status };
         if (notes) data.notes = notes;
+        await updateDoc(docRef, data);
+    }
+
+    // Generic Update (used for Rescheduling)
+    async updateAppointment(id: string, data: Partial<Appointment>): Promise<void> {
+        const docRef = doc(this.firestore, this.collectionName, id);
         await updateDoc(docRef, data);
     }
 

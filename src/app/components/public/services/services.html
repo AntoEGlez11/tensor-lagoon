@@ -51,7 +51,7 @@
 
 @if (selectedPackage()) {
 <app-booking-modal [serviceName]="selectedPackage()!.title" [serviceId]="selectedPackage()!.id!"
-    (close)="closeBooking()">
+    [servicePrice]="selectedPackage()!.price" (close)="closeBooking()">
 </app-booking-modal>
 }
 
@@ -89,7 +89,7 @@
                 class="w-full bg-auto-accent hover:bg-red-600 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-red-900/20">
                 Iniciar Sesión
             </button>
-            <button (click)="goToLogin()"
+            <button (click)="goToRegister()"
                 class="w-full bg-white/5 hover:bg-white/10 text-white font-medium py-3 rounded-xl border border-white/10 transition-all">
                 Crear Cuenta
             </button>

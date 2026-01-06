@@ -1,10 +1,21 @@
 import { Component, inject, signal, computed, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CrmService, ServiceTicket, UserProfile } from '../../../services/crm';
 import { ToastService } from '../../../services/toast';
 import { Unsubscribe } from '@angular/fire/firestore';
 import { AppointmentService, Appointment } from '../../../services/appointment';
+import { VEHICLE_BRANDS, VEHICLE_YEARS, VEHICLE_COLORS } from '../../../data/vehicles';
+
+// Custom Validator
+function nonRepetitiveValidator(control: AbstractControl): ValidationErrors | null {
+  const value = control.value;
+  if (!value) return null;
+  if (/^(\d)\1+$/.test(value)) {
+    return { repetitive: true };
+  }
+  return null;
+}
 
 @Component({
   selector: 'app-dashboard',
@@ -53,7 +64,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
   // Customer Form (Modal)
   customerForm = this.fb.nonNullable.group({
-    phone: ['', Validators.required],
+    phone: ['', [Validators.required, Validators.pattern('^[0-9]{10}$'), nonRepetitiveValidator]],
     name: ['', Validators.required],
     email: ['', Validators.email]
   });
@@ -63,11 +74,38 @@ export class Dashboard implements OnInit, OnDestroy {
   // Updated Service Form
   createForm = this.fb.nonNullable.group({
     customerSearch: ['', Validators.required],
-    vehicle: ['', Validators.required],
+    // Structured Vehicle Fields
+    vehicleBrand: ['', Validators.required],
+    vehicleModel: ['', Validators.required],
+    vehicleYear: ['', Validators.required],
+    vehicleColor: ['', Validators.required],
+
     licensePlate: ['', Validators.required],
     package: ['Basic Wash', Validators.required],
     price: [25, [Validators.required, Validators.min(0)]]
   });
+
+  // Vehicle Constants
+  vehicleBrands = Object.keys(VEHICLE_BRANDS);
+  vehicleModels = signal<string[]>([]);
+  vehicleYears = VEHICLE_YEARS;
+  vehicleColors = VEHICLE_COLORS;
+
+  constructor() {
+    // Watch for brand changes
+    this.createForm.get('vehicleBrand')?.valueChanges.subscribe(brand => {
+      if (brand && VEHICLE_BRANDS[brand]) {
+        this.vehicleModels.set(VEHICLE_BRANDS[brand]);
+        // Reset model if invalid
+        const current = this.createForm.get('vehicleModel')?.value || '';
+        if (!VEHICLE_BRANDS[brand].includes(current)) {
+          this.createForm.patchValue({ vehicleModel: '' });
+        }
+      } else {
+        this.vehicleModels.set([]);
+      }
+    });
+  }
 
   ngOnInit() {
     this.unsub = this.crm.getAllServices((data) => {
@@ -87,29 +125,56 @@ export class Dashboard implements OnInit, OnDestroy {
     });
   }
 
+  // Rejection State
+  rejectionModalOpen = signal(false);
+  rejectionAppt = signal<Appointment | null>(null);
+  rejectionReasonControl = this.fb.control('', Validators.required);
+  rejectionOptions = ['Horario no disponible', 'Problema con vehículo', 'Falta de personal', 'Otro'];
+
   async confirmAppointment(appt: Appointment) {
     if (!appt.id) return;
     try {
+      // 1. Convert to Service Ticket (so it appears in Active Services)
+      if (appt.userId) { // Only if linked to a user
+        await this.crm.createServiceFromAppointment(appt);
+      }
+
+      // 2. Update Status
       await this.appointmentService.updateStatus(appt.id, 'confirmed');
-      this.toast.show('Appointment confirmed', 'success');
+      this.toast.show('Cita confirmada y servicio creado', 'success');
       this.loadPendingAppointments();
     } catch (err) {
       console.error(err);
-      this.toast.show('Error confirming', 'error');
+      this.toast.show('Error al confirmar', 'error');
     }
   }
 
-  async rejectAppointment(appt: Appointment) {
-    if (!appt.id) return;
-    if (!confirm('Are you sure you want to reject this booking?')) return;
+  openRejectModal(appt: Appointment) {
+    this.rejectionAppt.set(appt);
+    this.rejectionReasonControl.setValue('Horario no disponible');
+    this.rejectionModalOpen.set(true);
+  }
+
+  closeRejectModal() {
+    this.rejectionModalOpen.set(false);
+    this.rejectionAppt.set(null);
+    this.rejectionReasonControl.reset();
+  }
+
+  async confirmRejection() {
+    const appt = this.rejectionAppt();
+    if (!appt || !appt.id || this.rejectionReasonControl.invalid) return;
 
     try {
-      await this.appointmentService.updateStatus(appt.id, 'rejected');
-      this.toast.show('Appointment rejected', 'info');
+      const reason = this.rejectionReasonControl.value;
+      await this.appointmentService.updateStatus(appt.id, 'rejected', reason || 'Sin motivo');
+
+      this.toast.show('Cita rechazada', 'info');
       this.loadPendingAppointments();
+      this.closeRejectModal();
     } catch (err) {
       console.error(err);
-      this.toast.show('Error rejecting', 'error');
+      this.toast.show('Error al rechazar', 'error');
     }
   }
 
@@ -131,7 +196,7 @@ export class Dashboard implements OnInit, OnDestroy {
     } catch (err) {
       console.error(err);
       this.loadingLookup.set(false);
-      this.toast.show('Search failed', 'error');
+      this.toast.show('Error en búsqueda', 'error');
     }
   }
 
@@ -169,16 +234,16 @@ export class Dashboard implements OnInit, OnDestroy {
       this.showCustomerModal.set(false);
       this.customerForm.reset();
       this.createForm.patchValue({ customerSearch: newUser.phone || newUser.name });
-      this.toast.show('Customer created successfully', 'success');
+      this.toast.show('Cliente creado con éxito', 'success');
     } catch (err) {
       console.error(err);
-      this.toast.show('Error creating customer', 'error');
+      this.toast.show('Error al crear cliente', 'error');
     }
   }
 
   async createService() {
     if (this.createForm.invalid || !this.selectedUser()) {
-      if (!this.selectedUser()) this.toast.show('Please select a customer first', 'error');
+      if (!this.selectedUser()) this.toast.show('Selecciona un cliente primero', 'error');
       return;
     }
 
@@ -186,20 +251,23 @@ export class Dashboard implements OnInit, OnDestroy {
       const user = this.selectedUser();
 
       if (!user || !user.uid) {
-        this.toast.show('Please select a valid customer', 'error');
+        this.toast.show('Cliente inválido', 'error');
         return;
       }
 
       const form = this.createForm.getRawValue();
 
+      // Construct vehicle string
+      const vehicleString = `${form.vehicleBrand} ${form.vehicleModel} ${form.vehicleYear} ${form.vehicleColor}`.trim();
+
       const ticket: Omit<ServiceTicket, 'id' | 'createdAt'> = {
-        vehicle: form.vehicle,
-        licensePlate: form.licensePlate,
+        vehicle: vehicleString,
+        licensePlate: form.licensePlate.trim().toUpperCase(),
         package: form.package,
         price: form.price,
         customerEmail: user.email || '',
         customerPhone: user.phone || 'N/A',
-        customerName: user.name || 'Unknown',
+        customerName: user.name || 'Desconocido',
         customerId: user.uid,
         status: 'pending'
       };
@@ -211,6 +279,7 @@ export class Dashboard implements OnInit, OnDestroy {
       this.selectedUser.set(null);
       this.foundUsers.set([]);
       this.lookupAttempted.set(false);
+      this.toast.show('Servicio creado', 'success');
     } catch (err) {
       console.error(err);
     }
@@ -218,5 +287,18 @@ export class Dashboard implements OnInit, OnDestroy {
 
   async updateStatus(id: string, status: ServiceTicket['status']) {
     await this.crm.updateStatus(id, status);
+  }
+
+  // --- Migration Tool ---
+  async fixUserData() {
+    if (!confirm('¿Generar teléfonos aleatorios para usuarios sin número? (Solo correr una vez)')) return;
+    try {
+      this.toast.show('Procesando...', 'info');
+      const count = await this.crm.migrateUserPhoneNumbers();
+      this.toast.show(`Se actualizaron ${count} usuarios`, 'success');
+    } catch (err) {
+      console.error(err);
+      this.toast.show('Error en migración', 'error');
+    }
   }
 }

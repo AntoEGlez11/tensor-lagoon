@@ -2,9 +2,9 @@
     <div class="bg-auto-carbon border border-white/5 p-8 rounded-2xl w-full max-w-md shadow-2xl">
         <div class="text-center mb-8">
             <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 mb-2">
-                JOIN <span class="text-auto-accent">US</span>
+                ÚNETE <span class="text-auto-accent">HOY</span>
             </h1>
-            <p class="text-gray-400 text-sm">Create your account to track your services</p>
+            <p class="text-gray-400 text-sm">Crea tu cuenta para gestionar tus servicios</p>
         </div>
 
         <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-6">
@@ -15,22 +15,43 @@
             }
 
             <div>
-                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Email Address</label>
+                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Correo
+                    Electrónico</label>
                 <input formControlName="email" type="email"
                     class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-auto-accent focus:ring-1 focus:ring-auto-accent transition-all"
-                    placeholder="you@example.com">
+                    placeholder="tu@correo.com">
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Password</label>
+                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Número de
+                    Teléfono</label>
+                <input formControlName="phone" type="tel" maxlength="10"
+                    class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-auto-accent focus:ring-1 focus:ring-auto-accent transition-all"
+                    placeholder="10 dígitos (Ej: 8711234567)">
+
+                @if (registerForm.controls.phone.touched && registerForm.controls.phone.errors) {
+                <div class="text-red-500 text-xs mt-1">
+                    @if (registerForm.controls.phone.errors['required']) { Es obligatorio. }
+                    @if (registerForm.controls.phone.errors['pattern']) { Deben ser 10 dígitos. }
+                    @if (registerForm.controls.phone.errors['repetitive']) { Número inválido (repetitivo). }
+                </div>
+                }
+                <p class="text-[10px] text-gray-500 mt-1">
+                    * Tu número servirá como identificador y para confirmar citas.
+                    <a href="#" class="underline hover:text-gray-300">Privacidad</a>
+                </p>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Contraseña</label>
                 <input formControlName="password" type="password"
                     class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-auto-accent focus:ring-1 focus:ring-auto-accent transition-all"
                     placeholder="••••••••">
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Confirm
-                    Password</label>
+                <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Confirmar
+                    Contraseña</label>
                 <input formControlName="confirmPassword" type="password"
                     class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-auto-accent focus:ring-1 focus:ring-auto-accent transition-all"
                     placeholder="••••••••">
@@ -39,15 +60,15 @@
             <button type="submit" [disabled]="loading() || registerForm.invalid"
                 class="w-full bg-auto-accent hover:bg-red-600 text-white font-bold py-3.5 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_0_20px_rgba(255,62,62,0.3)]">
                 @if (loading()) {
-                Creating Account...
+                Creando Cuenta...
                 } @else {
-                Create Account
+                Crear Cuenta
                 }
             </button>
 
             <div class="text-center mt-6">
                 <a routerLink="/login" class="text-gray-400 hover:text-white text-sm transition-colors">
-                    Already have an account? <span class="text-auto-accent">Sign In</span>
+                    ¿Ya tienes cuenta? <span class="text-auto-accent">Inicia Sesión</span>
                 </a>
             </div>
         </form>

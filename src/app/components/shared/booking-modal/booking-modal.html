@@ -113,10 +113,48 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-400 mb-1">Vehículo (Marca/Modelo/Año)</label>
-                        <input [(ngModel)]="vehicleInfo" type="text"
-                            class="w-full bg-auto-carbon border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-auto-accent transition-colors"
-                            placeholder="Ej: Toyota Corolla 2020">
+                        <label class="block text-sm font-medium text-gray-400 mb-1">Vehículo</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <!-- Brand -->
+                            <select [(ngModel)]="vehicleBrand" (change)="onBrandChange()"
+                                class="col-span-2 w-full bg-auto-carbon border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-auto-accent transition-colors appearance-none"
+                                required>
+                                <option value="" disabled selected>Marca</option>
+                                @for (brand of vehicleBrands; track brand) {
+                                <option [value]="brand">{{ brand }}</option>
+                                }
+                            </select>
+
+                            <!-- Model -->
+                            <select [(ngModel)]="vehicleModel"
+                                class="col-span-2 w-full bg-auto-carbon border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-auto-accent transition-colors appearance-none"
+                                [disabled]="!vehicleBrand" [class.opacity-50]="!vehicleBrand" required>
+                                <option value="" disabled selected>Modelo</option>
+                                @for (model of vehicleModels(); track model) {
+                                <option [value]="model">{{ model }}</option>
+                                }
+                            </select>
+
+                            <!-- Year -->
+                            <select [(ngModel)]="vehicleYear"
+                                class="w-full bg-auto-carbon border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-auto-accent transition-colors appearance-none"
+                                required>
+                                <option value="" disabled selected>Año</option>
+                                @for (year of vehicleYears; track year) {
+                                <option [value]="year">{{ year }}</option>
+                                }
+                            </select>
+
+                            <!-- Color -->
+                            <select [(ngModel)]="vehicleColor"
+                                class="w-full bg-auto-carbon border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-auto-accent transition-colors appearance-none"
+                                required>
+                                <option value="" disabled selected>Color</option>
+                                @for (color of vehicleColors; track color) {
+                                <option [value]="color">{{ color }}</option>
+                                }
+                            </select>
+                        </div>
                     </div>
                 </div>
 

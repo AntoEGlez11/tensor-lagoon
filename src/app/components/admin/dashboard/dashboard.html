@@ -1,13 +1,19 @@
 <div>
     <header class="mb-8 flex justify-between items-center">
         <div>
-            <h1 class="text-3xl font-bold">Dashboard</h1>
-            <p class="text-gray-400">Manage your service queue</p>
+            <h1 class="text-3xl font-bold">Panel de Control</h1>
+            <p class="text-gray-400">Gestiona la cola de servicios</p>
         </div>
-        <button (click)="showCreateForm.set(!showCreateForm())"
-            class="bg-auto-accent hover:bg-red-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors">
-            {{ showCreateForm() ? 'Cancel' : '+ New Service' }}
-        </button>
+        <div class="flex gap-2">
+            <button (click)="fixUserData()"
+                class="bg-gray-800 hover:bg-gray-700 text-gray-300 px-4 py-2 rounded-lg font-bold text-xs transition-colors border border-white/5">
+                🛠️ Reparar Datos
+            </button>
+            <button (click)="showCreateForm.set(!showCreateForm())"
+                class="bg-auto-accent hover:bg-red-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors">
+                {{ showCreateForm() ? 'Cancelar' : '+ Nuevo Servicio' }}
+            </button>
+        </div>
     </header>
 
     <!-- Stats Grid -->
@@ -29,39 +35,39 @@
 
     @if (showCreateForm()) {
     <div class="bg-auto-carbon border border-white/10 rounded-xl p-6 mb-8 animate-fade-in relative">
-        <h2 class="text-xl font-bold mb-4">Create New Ticket</h2>
+        <h2 class="text-xl font-bold mb-4">Crear Nuevo Ticket</h2>
         <form [formGroup]="createForm" (ngSubmit)="createService()" class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
             <!-- Customer Search and Selection -->
             <div class="md:col-span-2 space-y-2">
-                <label class="text-xs text-gray-500 block">Customer Search (Phone/Name)</label>
+                <label class="text-xs text-gray-500 block">Buscar Cliente (Teléfono/Nombre)</label>
                 <div class="flex gap-2">
                     <input formControlName="customerSearch" type="text"
-                        placeholder="Search by Phone (recommended) or Name..."
+                        placeholder="Buscar por Teléfono (recomendado) o Nombre..."
                         class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white">
                     <button type="button" (click)="searchCustomer()"
                         class="bg-blue-600 hover:bg-blue-500 text-white px-4 rounded-lg font-bold text-xs"
                         [disabled]="loadingLookup()">
-                        {{ loadingLookup() ? 'Searching...' : 'Search' }}
+                        {{ loadingLookup() ? 'Buscando...' : 'Buscar' }}
                     </button>
                     <button type="button" (click)="openCustomerModal()"
                         class="bg-green-600 hover:bg-green-500 text-white px-4 rounded-lg font-bold text-xs whitespace-nowrap">
-                        + New
+                        + Nuevo
                     </button>
                 </div>
 
                 <!-- Search Results -->
                 @if (foundUsers().length > 0 && !selectedUser()) {
                 <div class="bg-black/40 border border-white/10 rounded-lg p-2 max-h-40 overflow-y-auto">
-                    <p class="text-xs text-gray-400 mb-2 px-2">Select a customer:</p>
+                    <p class="text-xs text-gray-400 mb-2 px-2">Selecciona un cliente:</p>
                     @for (user of foundUsers(); track user.uid) {
                     <button type="button" (click)="selectUser(user)"
                         class="w-full text-left flex justify-between items-center p-2 hover:bg-white/10 rounded text-sm transition-colors">
                         <span>
-                            <span class="font-bold text-white">{{ user.name || 'No Name' }}</span>
+                            <span class="font-bold text-white">{{ user.name || 'Sin Nombre' }}</span>
                             <span class="text-gray-400 ml-2">{{ user.phone }}</span>
                         </span>
-                        <span class="text-xs text-auto-accent">Select</span>
+                        <span class="text-xs text-auto-accent">Seleccionar</span>
                     </button>
                     }
                 </div>
@@ -72,43 +78,80 @@
                 <div
                     class="bg-green-500/10 border border-green-500/30 rounded-lg p-3 flex justify-between items-center">
                     <div>
-                        <div class="text-sm font-bold text-green-400">✓ Selected Customer</div>
+                        <div class="text-sm font-bold text-green-400">✓ Cliente Seleccionado</div>
                         <div class="text-white">{{ user.name }}</div>
-                        <div class="text-xs text-gray-400">{{ user.phone }} | {{ user.email || 'No
-                            Email' }}</div>
+                        <div class="text-xs text-gray-400">{{ user.phone }} | {{ user.email || 'Sin Email' }}</div>
                     </div>
                     <button type="button" (click)="selectedUser.set(null)"
-                        class="text-xs text-red-400 hover:text-red-300">Change</button>
+                        class="text-xs text-red-400 hover:text-red-300">Cambiar</button>
                 </div>
                 } @else if (lookupAttempted() && foundUsers().length === 0) {
-                <div class="text-red-400 text-xs">✗ No customers found. Use "+ New" to create one.</div>
+                <div class="text-red-400 text-xs">✗ No se encontraron clientes. Usa "+ Nuevo" para crear uno.</div>
                 }
             </div>
 
             <div class="space-y-1">
-                <input formControlName="vehicle" type="text" placeholder="Vehicle (e.g. Ford Mustang)"
-                    class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white">
+                <label class="text-xs text-gray-500 block">Vehículo</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <!-- Brand -->
+                    <select formControlName="vehicleBrand"
+                        class="col-span-2 w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white">
+                        <option value="" disabled selected>Marca</option>
+                        @for (brand of vehicleBrands; track brand) {
+                        <option [value]="brand">{{ brand }}</option>
+                        }
+                    </select>
+
+                    <!-- Model -->
+                    <select formControlName="vehicleModel"
+                        class="col-span-2 w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white"
+                        [attr.disabled]="!createForm.get('vehicleBrand')?.value ? true : null"
+                        [class.opacity-50]="!createForm.get('vehicleBrand')?.value">
+                        <option value="" disabled selected>Modelo</option>
+                        @for (model of vehicleModels(); track model) {
+                        <option [value]="model">{{ model }}</option>
+                        }
+                    </select>
+
+                    <!-- Year -->
+                    <select formControlName="vehicleYear"
+                        class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white">
+                        <option value="" disabled selected>Año</option>
+                        @for (year of vehicleYears; track year) {
+                        <option [value]="year">{{ year }}</option>
+                        }
+                    </select>
+
+                    <!-- Color -->
+                    <select formControlName="vehicleColor"
+                        class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white">
+                        <option value="" disabled selected>Color</option>
+                        @for (color of vehicleColors; track color) {
+                        <option [value]="color">{{ color }}</option>
+                        }
+                    </select>
+                </div>
             </div>
 
             <div class="space-y-1">
-                <input formControlName="licensePlate" type="text" placeholder="License Plate (e.g. ABC-123)"
+                <input formControlName="licensePlate" type="text" placeholder="Placas (ej. ABC-123)"
                     class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white uppercase">
             </div>
 
             <select formControlName="package"
                 class="bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white">
-                <option value="Basic Wash">Basic Wash</option>
-                <option value="Premium Detail">Premium Detail</option>
-                <option value="Ceramic Coating">Ceramic Coating</option>
+                <option value="Basic Wash">Lavado Básico</option>
+                <option value="Premium Detail">Detallado Premium</option>
+                <option value="Ceramic Coating">Recubrimiento Cerámico</option>
             </select>
 
-            <input formControlName="price" type="number" placeholder="Price"
+            <input formControlName="price" type="number" placeholder="Precio"
                 class="bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white">
 
             <div class="md:col-span-2">
                 <button [disabled]="createForm.invalid || !selectedUser()" type="submit"
                     class="w-full bg-white text-black font-bold rounded-lg px-4 py-3 hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                    Create Service Ticket
+                    Crear Ticket de Servicio
                 </button>
             </div>
         </form>
@@ -118,28 +161,29 @@
         <div
             class="absolute inset-0 bg-black/90 z-50 flex items-center justify-center rounded-xl backdrop-blur-sm p-4 animate-fade-in">
             <div class="bg-auto-carbon w-full max-w-md p-6 rounded-lg border border-white/20 shadow-2xl">
-                <h3 class="text-lg font-bold text-white mb-4">Quick Add Customer</h3>
+                <h3 class="text-lg font-bold text-white mb-4">Agregar Cliente Rápido</h3>
                 <form [formGroup]="customerForm" (ngSubmit)="createNewCustomer()" class="space-y-3">
                     <div>
-                        <label class="text-xs text-gray-400">Phone Number (*)</label>
+                        <label class="text-xs text-gray-400">Teléfono (*)</label>
                         <input formControlName="phone" type="tel"
                             class="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-white">
                     </div>
                     <div>
-                        <label class="text-xs text-gray-400">Full Name (*)</label>
+                        <label class="text-xs text-gray-400">Nombre Completo (*)</label>
                         <input formControlName="name" type="text"
                             class="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-white">
                     </div>
                     <div>
-                        <label class="text-xs text-gray-400">Email (Optional)</label>
+                        <label class="text-xs text-gray-400">Email (Opcional)</label>
                         <input formControlName="email" type="email"
                             class="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-white">
                     </div>
                     <div class="flex gap-3 pt-2">
                         <button type="button" (click)="showCustomerModal.set(false)"
-                            class="flex-1 bg-gray-700 text-white py-2 rounded">Cancel</button>
+                            class="flex-1 bg-gray-700 text-white py-2 rounded">Cancelar</button>
                         <button type="submit" [disabled]="customerForm.invalid"
-                            class="flex-1 bg-auto-accent text-white py-2 rounded font-bold">Save & Select</button>
+                            class="flex-1 bg-auto-accent text-white py-2 rounded font-bold">Guardar y
+                            Seleccionar</button>
                     </div>
                 </form>
             </div>
@@ -159,7 +203,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    New Booking Requests ({{ pendingAppointments().length }})
+                    Solicitudes de Reserva Nuevas ({{ pendingAppointments().length }})
                 </h3>
             </div>
         </div>
@@ -194,13 +238,13 @@
                     }
                 </div>
                 <div class="flex gap-2">
-                    <button (click)="rejectAppointment(appt)"
+                    <button (click)="openRejectModal(appt)"
                         class="px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition-colors">
-                        Reject
+                        Rechazar
                     </button>
                     <button (click)="confirmAppointment(appt)"
                         class="px-4 py-2 text-sm bg-green-600 hover:bg-green-500 text-white rounded-lg font-bold shadow-lg shadow-green-900/20 transition-all hover:-translate-y-0.5">
-                        Confirm Booking
+                        Confirmar
                     </button>
                 </div>
             </div>
@@ -212,16 +256,16 @@
     <!-- Active Services Table -->
     <div class="bg-auto-carbon rounded-xl border border-white/5 overflow-hidden">
         <div class="p-6 border-b border-white/5">
-            <h3 class="font-bold">Active Services Queue</h3>
+            <h3 class="font-bold">Cola de Servicios Activos</h3>
         </div>
         <table class="w-full text-sm">
             <thead class="bg-black/20 text-gray-400">
                 <tr>
-                    <th class="px-6 py-3 text-left">Vehicle</th>
-                    <th class="px-6 py-3 text-left">Service</th>
-                    <th class="px-6 py-3 text-left">Customer</th>
-                    <th class="px-6 py-3 text-left">Status</th>
-                    <th class="px-6 py-3 text-right">Actions</th>
+                    <th class="px-6 py-3 text-left">Vehículo</th>
+                    <th class="px-6 py-3 text-left">Servicio</th>
+                    <th class="px-6 py-3 text-left">Cliente</th>
+                    <th class="px-6 py-3 text-left">Estado</th>
+                    <th class="px-6 py-3 text-right">Acciones</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-white/5">
@@ -229,12 +273,12 @@
                 <tr class="hover:bg-white/5 transition-colors">
                     <td class="px-6 py-4">
                         <div class="font-bold text-white">{{ ticket.vehicle }}</div>
-                        <div class="text-xs text-gray-400 uppercase tracking-widest">{{ ticket.licensePlate || 'NO
-                            PLATE' }}</div>
+                        <div class="text-xs text-gray-400 uppercase tracking-widest">{{ ticket.licensePlate || 'SIN
+                            PLACA' }}</div>
                     </td>
                     <td class="px-6 py-4">{{ ticket.package }}</td>
                     <td class="px-6 py-4">
-                        <div class="text-white">{{ ticket.customerName || 'Unknown' }}</div>
+                        <div class="text-white">{{ ticket.customerName || 'Desconocido' }}</div>
                         <div class="text-xs text-gray-500">{{ ticket.customerPhone }}</div>
                     </td>
                     <td class="px-6 py-4">
@@ -253,15 +297,15 @@
                     <td class="px-6 py-4 text-right space-x-2">
                         @if (ticket.status === 'pending') {
                         <button (click)="updateStatus(ticket.id!, 'in-progress')"
-                            class="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">Start</button>
+                            class="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">Iniciar</button>
                         }
                         @if (ticket.status === 'in-progress') {
                         <button (click)="updateStatus(ticket.id!, 'ready')"
-                            class="text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">Finish</button>
+                            class="text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">Terminar</button>
                         }
                         @if (ticket.status === 'ready') {
                         <button (click)="updateStatus(ticket.id!, 'completed')"
-                            class="text-xs bg-gray-600 text-white px-2 py-1 rounded hover:bg-gray-700">Close</button>
+                            class="text-xs bg-gray-600 text-white px-2 py-1 rounded hover:bg-gray-700">Cerrar</button>
                         }
                     </td>
                 </tr>
@@ -269,4 +313,45 @@
             </tbody>
         </table>
     </div>
+
+    <!-- Rejection Modal -->
+    @if (rejectionModalOpen()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+        <div class="bg-auto-carbon w-full max-w-md rounded-xl border border-white/10 p-6 shadow-2xl">
+            <h3 class="text-xl font-bold text-white mb-4">Rechazar Reserva</h3>
+            <p class="text-gray-400 text-sm mb-4">
+                El cliente será notificado del rechazo. Por favor indica el motivo.
+            </p>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Motivo del rechazo</label>
+                    <select [formControl]="rejectionReasonControl"
+                        class="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-white">
+                        <option value="" disabled>Selecciona un motivo</option>
+                        @for(reason of rejectionOptions; track reason) {
+                        <option [value]="reason">{{ reason }}</option>
+                        }
+                    </select>
+                </div>
+
+                @if (rejectionReasonControl.value === 'Otro') {
+                <textarea placeholder="Especifica el motivo..."
+                    class="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-white h-24"></textarea>
+                }
+
+                <div class="flex justify-end gap-3 mt-6">
+                    <button (click)="closeRejectModal()"
+                        class="px-4 py-2 text-gray-300 hover:text-white transition-colors">
+                        Cancelar
+                    </button>
+                    <button (click)="confirmRejection()" [disabled]="rejectionReasonControl.invalid"
+                        class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded font-bold disabled:opacity-50">
+                        Confirmar Rechazo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    }
 </div>
