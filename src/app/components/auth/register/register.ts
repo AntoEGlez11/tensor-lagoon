@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../services/auth';
 
 @Component({
@@ -12,6 +12,8 @@ import { AuthService } from '../../../services/auth';
 export class Register {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   error = signal<string>('');
   loading = signal<boolean>(false);
@@ -37,10 +39,15 @@ export class Register {
 
     try {
       await this.authService.register(email, password);
-      // alert('Account created! Redirecting...'); 
+      // Navigation logic
+      const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+      if (returnUrl) {
+        this.router.navigateByUrl(returnUrl);
+      } else {
+        this.router.navigate(['/dashboard']);
+      }
     } catch (err: any) {
       console.error(err);
-      alert('Error: ' + (err.message || 'Unknown error'));
       this.error.set(err.message || 'Registration failed');
       this.loading.set(false);
     }

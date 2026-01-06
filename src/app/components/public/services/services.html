@@ -37,10 +37,10 @@
                     }
                 </ul>
 
-                <button class="w-full py-3 rounded-lg font-bold transition-all" [class.bg-auto-accent]="pkg.recommended"
-                    [class.text-white]="pkg.recommended" [class.hover:bg-red-600]="pkg.recommended"
-                    [class.bg-white/10]="!pkg.recommended" [class.text-white]="!pkg.recommended"
-                    [class.hover:bg-white/20]="!pkg.recommended">
+                <button (click)="openBooking(pkg)" class="w-full py-3 rounded-lg font-bold transition-all"
+                    [class.bg-auto-accent]="pkg.recommended" [class.text-white]="pkg.recommended"
+                    [class.hover:bg-red-600]="pkg.recommended" [class.bg-white/10]="!pkg.recommended"
+                    [class.text-white]="!pkg.recommended" [class.hover:bg-white/20]="!pkg.recommended">
                     Reservar Ahora
                 </button>
             </div>
@@ -48,3 +48,56 @@
         </div>
     </div>
 </div>
+
+@if (selectedPackage()) {
+<app-booking-modal [serviceName]="selectedPackage()!.title" [serviceId]="selectedPackage()!.id!"
+    (close)="closeBooking()">
+</app-booking-modal>
+}
+
+<!-- Premium Auth Required Modal -->
+@if (showLoginPrompt()) {
+<div class="fixed inset-0 z-[70] flex items-center justify-center p-4 animate-fade-in">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" (click)="showLoginPrompt.set(false)"></div>
+
+    <!-- Modal -->
+    <div
+        class="relative bg-auto-carbon border border-white/10 rounded-2xl p-8 max-w-md w-full shadow-2xl transform transition-all scale-100">
+        <button (click)="showLoginPrompt.set(false)"
+            class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 bg-auto-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-auto-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                    </path>
+                </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-white mb-2">Acceso Requerido</h3>
+            <p class="text-gray-400 text-sm">Para gestionar tus reservas y brindarte el mejor servicio, necesitamos que
+                inicies sesión.</p>
+        </div>
+
+        <div class="space-y-3">
+            <button (click)="goToLogin()"
+                class="w-full bg-auto-accent hover:bg-red-600 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-red-900/20">
+                Iniciar Sesión
+            </button>
+            <button (click)="goToLogin()"
+                class="w-full bg-white/5 hover:bg-white/10 text-white font-medium py-3 rounded-xl border border-white/10 transition-all">
+                Crear Cuenta
+            </button>
+        </div>
+
+        <p class="mt-6 text-xs text-center text-gray-500">
+            Solo toma unos segundos.
+        </p>
+    </div>
+</div>
+}

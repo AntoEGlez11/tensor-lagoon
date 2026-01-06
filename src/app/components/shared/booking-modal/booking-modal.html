@@ -1,0 +1,158 @@
+<div class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" (click)="closeModal()"></div>
+
+    <!-- Modal Content -->
+    <div
+        class="relative bg-auto-carbon border border-white/10 rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh]">
+
+        <!-- Sidebar / Summary -->
+        <div class="md:w-1/3 bg-white/5 p-8 border-r border-white/5 flex flex-col">
+            <h3 class="text-2xl font-bold text-white mb-2">Tu Reserva</h3>
+            <div class="text-gray-400 text-sm mb-6">Completa los pasos para agendar.</div>
+
+            <div class="space-y-6 flex-1">
+                <!-- Service Info -->
+                <div class="p-4 bg-black/20 rounded-xl border border-white/5">
+                    <span class="text-xs font-bold text-auto-accent uppercase tracking-wider">SERVICIO</span>
+                    <div class="text-lg font-medium text-white">{{ serviceName }}</div>
+                    <div class="text-sm text-gray-400">Duración aprox: 1h</div>
+                </div>
+
+                <!-- Date Selection -->
+                @if (selectedDate()) {
+                <div class="p-4 bg-black/20 rounded-xl border border-white/5 animate-fade-in">
+                    <span class="text-xs font-bold text-auto-accent uppercase tracking-wider">FECHA</span>
+                    <div class="text-lg font-medium text-white capitalize">{{ formatDate(selectedDate()!) }}</div>
+                </div>
+                }
+
+                <!-- Time Selection -->
+                @if (selectedSlot()) {
+                <div class="p-4 bg-black/20 rounded-xl border border-white/5 animate-fade-in">
+                    <span class="text-xs font-bold text-auto-accent uppercase tracking-wider">HORA</span>
+                    <div class="text-lg font-medium text-white">{{ formatTime(selectedSlot()!) }}</div>
+                </div>
+                }
+            </div>
+
+            <button (click)="closeModal()"
+                class="mt-6 w-full py-3 text-gray-400 hover:text-white font-medium text-sm transition-colors">
+                Cancelar y Cerrar
+            </button>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 p-8 overflow-y-auto bg-auto-black">
+
+            <!-- Step: Date Selection -->
+            @if (step() === 'date') {
+            <div class="animate-fade-in">
+                <h2 class="text-2xl font-bold text-white mb-6">1. Elige una fecha</h2>
+                <app-calendar (dateSelected)="onDateSelected($event)" [selectedDate]="selectedDate()"></app-calendar>
+
+                @if (selectedDate()) {
+                <div class="mt-8">
+                    <h3 class="text-xl font-bold text-white mb-4">Horarios Disponibles</h3>
+
+                    @if (loading()) {
+                    <div class="flex justify-center py-8">
+                        <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-auto-accent"></div>
+                    </div>
+                    } @else if (availableSlots().length === 0) {
+                    <div
+                        class="text-center py-8 text-gray-400 bg-white/5 rounded-xl border border-white/5 border-dashed">
+                        No hay horarios disponibles para esta fecha.
+                    </div>
+                    } @else {
+                    <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                        @for (slot of availableSlots(); track slot) {
+                        <button (click)="selectSlot(slot)"
+                            class="py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 border bg-auto-carbon border-white/10 text-gray-300 hover:border-auto-accent hover:text-auto-accent hover:bg-white/5">
+                            {{ formatTime(slot) }}
+                        </button>
+                        }
+                    </div>
+                    }
+                </div>
+                }
+            </div>
+            }
+
+            <!-- Step: Details Form -->
+            @if (step() === 'details') {
+            <div class="animate-fade-in">
+                <button (click)="step.set('date')"
+                    class="mb-6 flex items-center text-gray-400 hover:text-white text-sm transition-colors">
+                    ← Volver al calendario
+                </button>
+
+                <h2 class="text-2xl font-bold text-white mb-6">2. Tus Datos</h2>
+
+                <div class="space-y-4 max-w-lg">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">Nombre Completo</label>
+                        <input [(ngModel)]="customerName" type="text"
+                            class="w-full bg-auto-carbon border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-auto-accent transition-colors"
+                            placeholder="Tu nombre">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-1">Email</label>
+                            <input [(ngModel)]="customerEmail" type="email"
+                                class="w-full bg-auto-carbon border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-auto-accent transition-colors"
+                                placeholder="correo@ejemplo.com">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-400 mb-1">Teléfono</label>
+                            <input [(ngModel)]="customerPhone" type="tel"
+                                class="w-full bg-auto-carbon border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-auto-accent transition-colors"
+                                placeholder="(555) 000-0000">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">Vehículo (Marca/Modelo/Año)</label>
+                        <input [(ngModel)]="vehicleInfo" type="text"
+                            class="w-full bg-auto-carbon border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-auto-accent transition-colors"
+                            placeholder="Ej: Toyota Corolla 2020">
+                    </div>
+                </div>
+
+                <button (click)="confirmBooking()" [disabled]="!customerName || !customerPhone || loading()"
+                    class="mt-8 w-full bg-auto-accent hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-lg font-bold py-4 rounded-xl shadow-lg shadow-red-900/20 transition-all transform hover:translate-y-[-2px]">
+                    @if (loading()) { Procesando... } @else { Confirmar Reserva }
+                </button>
+
+                @if (!authService.user()) {
+                <p class="mt-4 text-xs text-center text-gray-500">
+                    Al reservar aceptas nuestros términos y condiciones.
+                </p>
+                }
+            </div>
+            }
+
+            <!-- Step: Confirmation -->
+            @if (step() === 'confirmation') {
+            <div class="h-full flex flex-col items-center justify-center text-center animate-fade-in">
+                <div class="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mb-6">
+                    <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h2 class="text-3xl font-bold text-white mb-2">¡Solicitud Recibida!</h2>
+                <p class="text-gray-400 max-w-md mx-auto mb-8">
+                    Tu reserva ha sido registrada como <strong>pendiente</strong>. El administrador confirmará tu cita
+                    en breve y recibirás una notificación.
+                </p>
+                <button (click)="closeModal()"
+                    class="bg-white text-black hover:bg-gray-200 px-8 py-3 rounded-xl font-bold transition-colors">
+                    Entendido
+                </button>
+            </div>
+            }
+
+        </div>
+    </div>
+</div>

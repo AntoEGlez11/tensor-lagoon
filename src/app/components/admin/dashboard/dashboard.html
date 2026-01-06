@@ -148,6 +148,67 @@
     </div>
     }
 
+    <!-- Booking Requests Widget -->
+    @if (pendingAppointments().length > 0) {
+    <div
+        class="bg-auto-carbon rounded-xl border border-yellow-500/30 overflow-hidden mb-8 animate-fade-in relative z-10">
+        <div class="p-6 border-b border-white/5 bg-yellow-500/5 flex justify-between items-center">
+            <div>
+                <h3 class="font-bold text-yellow-500 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    New Booking Requests ({{ pendingAppointments().length }})
+                </h3>
+            </div>
+        </div>
+        <div class="divide-y divide-white/5">
+            @for (appt of pendingAppointments(); track appt.id) {
+            <div
+                class="p-4 flex flex-col md:flex-row md:items-center justify-between hover:bg-white/5 transition-colors">
+                <div class="mb-4 md:mb-0">
+                    <div class="flex items-center text-white font-bold mb-1">
+                        {{ appt.customerDetails.name }}
+                        <span class="ml-2 text-xs font-normal text-gray-400">({{ appt.serviceName }})</span>
+                    </div>
+                    <div class="text-sm text-gray-400 flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                        <span class="flex items-center">
+                            <svg class="w-4 h-4 mr-1 md:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                </path>
+                            </svg>
+                            {{ appt.start.toDate() | date:'mediumDate' }}
+                        </span>
+                        <span class="flex items-center text-auto-accent">
+                            <svg class="w-4 h-4 mr-1 md:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            {{ appt.start.toDate() | date:'shortTime' }}
+                        </span>
+                    </div>
+                    @if (appt.notes) {
+                    <div class="text-xs text-gray-500 mt-1 italic">"{{ appt.notes }}"</div>
+                    }
+                </div>
+                <div class="flex gap-2">
+                    <button (click)="rejectAppointment(appt)"
+                        class="px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition-colors">
+                        Reject
+                    </button>
+                    <button (click)="confirmAppointment(appt)"
+                        class="px-4 py-2 text-sm bg-green-600 hover:bg-green-500 text-white rounded-lg font-bold shadow-lg shadow-green-900/20 transition-all hover:-translate-y-0.5">
+                        Confirm Booking
+                    </button>
+                </div>
+            </div>
+            }
+        </div>
+    </div>
+    }
+
     <!-- Active Services Table -->
     <div class="bg-auto-carbon rounded-xl border border-white/5 overflow-hidden">
         <div class="p-6 border-b border-white/5">

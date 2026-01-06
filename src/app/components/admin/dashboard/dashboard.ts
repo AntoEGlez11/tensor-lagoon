@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CrmService, ServiceTicket, UserProfile } from '../../../services/crm';
 import { ToastService } from '../../../services/toast';
 import { Unsubscribe } from '@angular/fire/firestore';
+import { AppointmentService, Appointment } from '../../../services/appointment';
 
 @Component({
   selector: 'app-dashboard',
@@ -16,8 +17,10 @@ export class Dashboard implements OnInit, OnDestroy {
   private crm = inject(CrmService);
   private fb = inject(FormBuilder);
   private toast = inject(ToastService);
+  private appointmentService = inject(AppointmentService);
 
   services = signal<ServiceTicket[]>([]);
+  pendingAppointments = signal<Appointment[]>([]);
 
   // Computed Stats
   totalRevenue = computed(() =>
@@ -40,28 +43,28 @@ export class Dashboard implements OnInit, OnDestroy {
   );
 
   showCreateForm = signal(false);
-  showCustomerModal = signal(false); // Controls the modal visibility
+  showCustomerModal = signal(false);
 
   // Lookup state
   loadingLookup = signal(false);
   lookupAttempted = signal(false);
-  foundUsers = signal<UserProfile[]>([]); // Array for results
-  selectedUser = signal<UserProfile | null>(null); // The final selected user
+  foundUsers = signal<UserProfile[]>([]);
+  selectedUser = signal<UserProfile | null>(null);
 
   // Customer Form (Modal)
   customerForm = this.fb.nonNullable.group({
     phone: ['', Validators.required],
     name: ['', Validators.required],
-    email: ['', Validators.email] // Optional
+    email: ['', Validators.email]
   });
 
   private unsub?: Unsubscribe;
 
   // Updated Service Form
   createForm = this.fb.nonNullable.group({
-    customerSearch: ['', Validators.required], // Search term
+    customerSearch: ['', Validators.required],
     vehicle: ['', Validators.required],
-    licensePlate: ['', Validators.required], // New field
+    licensePlate: ['', Validators.required],
     package: ['Basic Wash', Validators.required],
     price: [25, [Validators.required, Validators.min(0)]]
   });
@@ -70,10 +73,44 @@ export class Dashboard implements OnInit, OnDestroy {
     this.unsub = this.crm.getAllServices((data) => {
       this.services.set(data);
     });
+    this.loadPendingAppointments();
   }
 
   ngOnDestroy() {
     if (this.unsub) this.unsub();
+  }
+
+  // --- Booking System ---
+  loadPendingAppointments() {
+    this.appointmentService.getPendingAppointments().subscribe(data => {
+      this.pendingAppointments.set(data);
+    });
+  }
+
+  async confirmAppointment(appt: Appointment) {
+    if (!appt.id) return;
+    try {
+      await this.appointmentService.updateStatus(appt.id, 'confirmed');
+      this.toast.show('Appointment confirmed', 'success');
+      this.loadPendingAppointments();
+    } catch (err) {
+      console.error(err);
+      this.toast.show('Error confirming', 'error');
+    }
+  }
+
+  async rejectAppointment(appt: Appointment) {
+    if (!appt.id) return;
+    if (!confirm('Are you sure you want to reject this booking?')) return;
+
+    try {
+      await this.appointmentService.updateStatus(appt.id, 'rejected');
+      this.toast.show('Appointment rejected', 'info');
+      this.loadPendingAppointments();
+    } catch (err) {
+      console.error(err);
+      this.toast.show('Error rejecting', 'error');
+    }
   }
 
   // New Search Logic
@@ -100,14 +137,12 @@ export class Dashboard implements OnInit, OnDestroy {
 
   selectUser(user: UserProfile) {
     this.selectedUser.set(user);
-    this.foundUsers.set([]); // Clear results
+    this.foundUsers.set([]);
     this.lookupAttempted.set(false);
-    // Fix: Fill search input so the form is valid
     this.createForm.patchValue({ customerSearch: user.phone || user.name });
   }
 
   openCustomerModal() {
-    // Pre-fill phone if search term looks like a phone number
     const term = this.createForm.get('customerSearch')?.value || '';
     if (!isNaN(Number(term))) {
       this.customerForm.patchValue({ phone: term });
@@ -122,19 +157,17 @@ export class Dashboard implements OnInit, OnDestroy {
 
     try {
       const docRef = await this.crm.createCustomer({ name, phone, email });
-      // Create a complete profile object for selection
       const newUser: UserProfile = {
         uid: docRef.id,
         name,
         phone,
         email,
-        role: 'customer' // Default role
+        role: 'customer'
       };
 
       this.selectedUser.set(newUser);
       this.showCustomerModal.set(false);
       this.customerForm.reset();
-      // Fix: Fill search input so the form is valid
       this.createForm.patchValue({ customerSearch: newUser.phone || newUser.name });
       this.toast.show('Customer created successfully', 'success');
     } catch (err) {
@@ -164,7 +197,7 @@ export class Dashboard implements OnInit, OnDestroy {
         licensePlate: form.licensePlate,
         package: form.package,
         price: form.price,
-        customerEmail: user.email || '', // Optional
+        customerEmail: user.email || '',
         customerPhone: user.phone || 'N/A',
         customerName: user.name || 'Unknown',
         customerId: user.uid,
@@ -174,7 +207,6 @@ export class Dashboard implements OnInit, OnDestroy {
       await this.crm.createService(ticket);
       this.showCreateForm.set(false);
 
-      // Reset logic
       this.createForm.reset({ package: 'Basic Wash', price: 25 });
       this.selectedUser.set(null);
       this.foundUsers.set([]);

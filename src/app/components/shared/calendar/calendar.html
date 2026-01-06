@@ -1,0 +1,47 @@
+<div class="bg-auto-carbon border border-white/10 rounded-2xl p-6 shadow-xl max-w-md mx-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+        <button (click)="prevMonth()"
+            class="text-gray-400 hover:text-white p-2 rounded-full hover:bg-white/5 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+        </button>
+        <h2 class="text-xl font-bold text-white capitalize">{{ monthLabel() }}</h2>
+        <button (click)="nextMonth()"
+            class="text-gray-400 hover:text-white p-2 rounded-full hover:bg-white/5 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- Weekday Headers -->
+    <div class="grid grid-cols-7 gap-1 mb-2">
+        @for (label of weekDayLabels; track label) {
+        <div class="text-center text-xs font-medium text-gray-500 py-1">
+            {{ label }}
+        </div>
+        }
+    </div>
+
+    <!-- Days Grid -->
+    <div class="grid grid-cols-7 gap-1">
+        @for (day of days(); track day) {
+        <div class="relative aspect-square">
+            <button (click)="selectDate(day)" [class.text-gray-600]="!isCurrentMonth(day)"
+                [class.text-gray-300]="isCurrentMonth(day) && !isSelected(day) && !isDayToday(day)"
+                [class.bg-auto-accent]="isSelected(day)" [class.text-white]="isSelected(day)"
+                [class.ring-1]="isDayToday(day) && !isSelected(day)"
+                [class.ring-auto-accent]="isDayToday(day) && !isSelected(day)"
+                class="w-full h-full flex items-center justify-center rounded-lg text-sm font-medium hover:bg-white/10 transition-all duration-200">
+                {{ day | date:'d' }}
+            </button>
+            @if (isDayToday(day)) {
+            <div class="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-auto-accent rounded-full">
+            </div>
+            }
+        </div>
+        }
+    </div>
+</div>
