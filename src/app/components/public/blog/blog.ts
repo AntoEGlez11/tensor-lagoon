@@ -6,7 +6,7 @@ import { PostCard } from '../../blog/post-card/post-card';
 
 @Component({
     selector: 'app-blog',
-    imports: [CommonModule, Hero, PostCard],
+    imports: [CommonModule, PostCard],
     templateUrl: './blog.html',
 })
 export class Blog {

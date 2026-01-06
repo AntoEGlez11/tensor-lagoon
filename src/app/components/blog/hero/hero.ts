@@ -6,12 +6,20 @@ import { RouterLink } from '@angular/router';
   imports: [RouterLink],
   templateUrl: './hero.html',
   styleUrl: './hero.css',
+  styles: [`
+    :host {
+      display: block;
+      width: 100%;
+    }
+  `]
 })
 export class Hero implements OnInit, OnDestroy {
   images = [
-    'https://placehold.co/1920x1080/1a1a1a/FFF?text=Car+Wash+1',
-    'https://placehold.co/1920x1080/2a2a2a/FFF?text=Car+Wash+2',
-    'https://placehold.co/1920x1080/3a3a3a/FFF?text=Car+Wash+3'
+    'assets/images/slide-1.jpg',
+    'assets/images/slide-2.jpg',
+    'assets/images/slide-3.jpg',
+    'assets/images/slide-4.jpg',
+    'assets/images/slide-5.jpg'
   ];
   currentIndex = signal(0);
   private intervalId: any;
