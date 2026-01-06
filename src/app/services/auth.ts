@@ -24,7 +24,7 @@ export class AuthService {
 
   constructor() {
     // Effect to sync profile whenever user changes
-    effect(() => {
+    effect((onCleanup) => {
       const u = this.user();
 
       // If u is undefined, Auth is still initializing. Do nothing.
@@ -33,13 +33,20 @@ export class AuthService {
       if (u) {
         const docRef = doc(this.firestore, 'users', u.uid);
         // Real-time listener for profile changes (role updates, etc)
-        onSnapshot(docRef, (snap) => {
+        const unsub = onSnapshot(docRef, (snap) => {
           if (snap.exists()) {
             this.userProfile.set(snap.data());
           } else {
             this.userProfile.set(null);
           }
+        }, (error) => {
+          // Handle permission errors gracefully (e.g. on logout)
+          console.warn('Profile sync error (likely logout):', error);
+          this.userProfile.set(null);
         });
+
+        // Cleanup listener when user changes or effect re-runs
+        onCleanup(() => unsub());
       } else {
         // User is definitely logged out (null)
         this.userProfile.set(null);
@@ -60,12 +67,16 @@ export class AuthService {
     }
   }
 
-  async register(email: string, pass: string) {
+  async register(email: string, pass: string, phone: string) {
     try {
       const credential = await createUserWithEmailAndPassword(this.auth, email, pass);
       const uid = credential.user.uid;
 
       // Adoption Logic: Check if Admin already created a 'ghost' profile for this email
+      // NOTE: This logic requires "List Users" permission which is insecure for public clients.
+      // Ideally this should be a Cloud Function triggered on auth.user.onCreate.
+      // For MVP, we skip this to prevent "Permission Denied" errors.
+      /*
       const usersRef = collection(this.firestore, 'users');
       const q = query(usersRef, where('email', '==', email));
       const snapshot = await getDocs(q);
@@ -80,36 +91,18 @@ export class AuthService {
       };
 
       if (!snapshot.empty) {
-        // Ghost profile exists!
-        const ghostDoc = snapshot.docs[0];
-        const ghostData = ghostDoc.data();
-
-        // Adopt data
-        initialData = {
-          ...initialData,
-          ...ghostData, // Merge fields like name, phone, licensePlates
-          role: 'customer' // Ensure they stay customer even if ghost had weird data
-        };
-
-        // Transfer Services from Ghost ID to New Auth UID
-        const ghostId = ghostDoc.id;
-        const servicesRef = collection(this.firestore, 'services');
-        const qServices = query(servicesRef, where('customerId', '==', ghostId));
-        const serviceSnap = await getDocs(qServices);
-
-        const batch = writeBatch(this.firestore);
-
-        // 1. Update all services to point to new UID
-        serviceSnap.docs.forEach(svc => {
-          batch.update(svc.ref, { customerId: uid });
-        });
-
-        // 2. Delete the old ghost user doc (optional, but cleaner)
-        batch.delete(ghostDoc.ref);
-
-        await batch.commit();
-        console.log(`Adopted ${serviceSnap.size} services from ghost user ${ghostId}`);
+        // ... (Ghost logic omitted for security)
       }
+      */
+
+      const initialData = {
+        email: email,
+        role: 'customer',
+        createdAt: new Date(),
+        phone: phone,
+        name: '',
+        licensePlates: [] as string[]
+      };
 
       // Create new official profile
       await setDoc(doc(this.firestore, 'users', uid), initialData);

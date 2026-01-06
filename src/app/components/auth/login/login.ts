@@ -1,5 +1,5 @@
 import { Component, inject, signal, effect } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../services/auth';
 
@@ -13,6 +13,7 @@ export class Login {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   error = signal<string>('');
   loading = signal<boolean>(false);
@@ -21,6 +22,13 @@ export class Login {
     effect(() => {
       const profile = this.authService.userProfile();
       if (profile) {
+        // Check for return URL
+        const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+        if (returnUrl) {
+          this.router.navigateByUrl(returnUrl);
+          return;
+        }
+
         if (profile.role === 'admin') {
           this.router.navigate(['/admin']);
         } else {

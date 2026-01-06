@@ -1,5 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { Firestore, collection, addDoc, query, where, getDocs, updateDoc, doc, orderBy, onSnapshot, Unsubscribe, deleteDoc } from '@angular/fire/firestore';
+import { Firestore, collection, addDoc, query, where, getDocs, updateDoc, doc, orderBy, onSnapshot, Unsubscribe, deleteDoc, writeBatch } from '@angular/fire/firestore';
 
 export interface ServiceOffering {
     id?: string;
@@ -15,6 +15,8 @@ export interface Testimonial {
     role: string;
     text: string;
 }
+
+import { Appointment } from './appointment';
 
 export interface ServiceTicket {
     id?: string;
@@ -65,6 +67,26 @@ export class CrmService {
             ...ticket,
             createdAt: new Date()
         });
+    }
+
+    // Convert Confirmed Appointment to Service Ticket
+    async createServiceFromAppointment(appt: Appointment) {
+        if (!appt.userId) throw new Error('Cannot create service for guest appointment (User ID required)');
+
+        const ticket: Omit<ServiceTicket, 'id' | 'createdAt'> = {
+            customerId: appt.userId,
+            customerEmail: appt.customerDetails.email,
+            customerPhone: appt.customerDetails.phone,
+            customerName: appt.customerDetails.name,
+            vehicle: appt.customerDetails.vehicleInfo || 'Unknown Vehicle', // Map vehicle info
+            licensePlate: 'TBD', // We might not have this in early booking, prompt on arrival or infer?
+            package: appt.serviceName,
+            status: 'pending', // Pending usually means "Waitlist" or "Arrived"? 
+            // For this flow, 'pending' service means "Ready to start".
+            price: appt.price || 0 // Use passed price or 0
+        };
+
+        return this.createService(ticket);
     }
 
     // Get services for a specific customer (Real-time)
@@ -304,5 +326,31 @@ export class CrmService {
         for (const t of defaults) {
             await addDoc(ref, t);
         }
+    }
+
+    // --- Data Migration (Admin Tool) ---
+    async migrateUserPhoneNumbers() {
+        const usersRef = collection(this.firestore, 'users');
+        const snapshot = await getDocs(usersRef);
+
+        let updatedCount = 0;
+        const batch = writeBatch(this.firestore);
+
+        snapshot.docs.forEach(doc => {
+            const data = doc.data() as UserProfile;
+            if (!data.phone || data.phone.length < 10) {
+                // Generate random Mexican phone (starts with 871 for Torreon context example)
+                const randomPart = Math.floor(Math.random() * 9000000) + 1000000; // 7 digits
+                const newPhone = `871${randomPart}`;
+
+                batch.update(doc.ref, { phone: newPhone });
+                updatedCount++;
+            }
+        });
+
+        if (updatedCount > 0) {
+            await batch.commit();
+        }
+        return updatedCount;
     }
 }

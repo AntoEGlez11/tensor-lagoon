@@ -19,6 +19,8 @@ yarn-error.log
 *.launch
 .settings/
 *.sublime-workspace
+.firebase
+firebase-debug.log
 
 # Visual Studio Code
 .vscode/*
@@ -41,3 +43,11 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Environments (Secrets)
+src/environments/environment.ts
+src/environments/environment.prod.ts
+.env
+
+# Angular
+.angular/

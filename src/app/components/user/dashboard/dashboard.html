@@ -5,33 +5,30 @@
             <!-- Welcome -->
             <div class="lg:col-span-2">
                 <div class="mb-2">
-                    <h1 class="text-3xl font-bold text-white">My <span class="text-auto-accent">Garage</span></h1>
+                    <h1 class="text-3xl font-bold text-white">Mi <span class="text-auto-accent">Garage</span></h1>
                 </div>
 
                 <!-- User Info Badge -->
                 <div class="bg-white/5 border border-white/10 rounded-lg p-4 inline-block min-w-[300px]">
                     <div class="flex items-center gap-3 mb-1">
                         <div class="bg-auto-accent w-2 h-2 rounded-full"></div>
-                        <span class="text-xl font-bold text-white">{{ userProfile()?.name || 'Valued Customer' }}</span>
+                        <span class="text-xl font-bold text-white">{{ userProfile()?.name || 'Cliente Valorado'
+                            }}</span>
                     </div>
                     <div class="text-gray-400 text-sm flex flex-col gap-1 ml-5">
                         <span>{{ user()?.email }}</span>
-                        <span class="text-auto-accent/80">{{ userProfile()?.phone || 'No phone linked' }}</span>
+                        <span class="text-auto-accent/80">{{ userProfile()?.phone || 'Sin teléfono' }}</span>
                     </div>
                 </div>
 
                 <!-- Stats Row -->
                 <div class="grid grid-cols-3 gap-4 mt-8">
-                    <!-- <div class="bg-auto-carbon border border-white/5 rounded-xl p-4">
-                        <div class="text-xs text-gray-400 uppercase tracking-widest mb-1">Total Spent</div>
-                        <div class="text-2xl font-bold text-green-500">${{ stats().totalSpent | number }}</div>
-                    </div> -->
                     <div class="bg-auto-carbon border border-white/5 rounded-xl p-4">
-                        <div class="text-xs text-gray-400 uppercase tracking-widest mb-1">Services</div>
+                        <div class="text-xs text-gray-400 uppercase tracking-widest mb-1">Servicios</div>
                         <div class="text-2xl font-bold text-white">{{ stats().totalServices }}</div>
                     </div>
                     <div class="bg-auto-carbon border border-white/5 rounded-xl p-4">
-                        <div class="text-xs text-gray-400 uppercase tracking-widest mb-1">Active</div>
+                        <div class="text-xs text-gray-400 uppercase tracking-widest mb-1">Activos</div>
                         <div class="text-2xl font-bold text-auto-accent">{{ activeServices().length }}</div>
                     </div>
                 </div>
@@ -46,34 +43,235 @@
                     </svg>
                 </div>
                 <div class="relative z-10">
-                    <h3 class="text-lg font-bold text-white mb-4 border-b border-white/5 pb-2">My Profile</h3>
+                    <div class="flex justify-between items-center border-b border-white/5 pb-2 mb-4">
+                        <h3 class="text-lg font-bold text-white">Mi Perfil</h3>
+                        @if (!editMode()) {
+                        <button (click)="enterEditMode()" class="text-auto-accent text-xs font-bold hover:text-white">
+                            ✎ Editar
+                        </button>
+                        }
+                    </div>
+
+                    @if (!editMode()) {
+                    <!-- View Mode -->
                     <div class="space-y-3">
                         <div>
-                            <label class="text-xs text-gray-500 block">Full Name</label>
-                            <div class="text-white">{{ userProfile()?.name || 'Not set' }}</div>
+                            <label class="text-xs text-gray-500 block">Nombre Completo</label>
+                            <div class="text-white">{{ userProfile()?.name || 'No definido' }}</div>
                         </div>
                         <div>
-                            <label class="text-xs text-gray-500 block">Phone Limit</label>
-                            <div class="text-white">{{ userProfile()?.phone || 'Not set' }}</div>
+                            <label class="text-xs text-gray-500 block">Teléfono (ID)</label>
+                            <div class="text-white font-mono bg-white/5 px-2 py-1 rounded inline-block text-sm">
+                                {{ userProfile()?.phone || 'No definido' }}
+                            </div>
                         </div>
                         <div>
-                            <label class="text-xs text-gray-500 block">Email</label>
+                            <label class="text-xs text-gray-500 block">Correo</label>
                             <div class="text-white text-sm">{{ user()?.email }}</div>
                         </div>
+                        <!-- Extra Fields -->
+                        @if (userProfile()?.vehicleModel) {
+                        <div>
+                            <label class="text-xs text-gray-500 block">Vehículo Principal</label>
+                            <div class="text-white text-sm">
+                                {{ userProfile()?.vehicleModel }}
+                                <span class="text-gray-400">{{ userProfile()?.vehicleColor }} {{
+                                    userProfile()?.vehicleYear }}</span>
+                            </div>
+                        </div>
+                        }
+
                         <button (click)="logout()"
                             class="w-full mt-4 border border-white/20 hover:bg-white/10 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors">
-                            Sign Out
+                            Cerrar Sesión
                         </button>
                     </div>
+                    } @else {
+                    <!-- Edit Mode -->
+                    <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="space-y-3 animate-fade-in">
+                        <div>
+                            <label class="text-xs text-gray-500 block mb-1">Nombre Completo</label>
+                            <input formControlName="name" type="text"
+                                class="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-white text-sm">
+                        </div>
+
+                        <div>
+                            <label class="text-xs text-gray-500 block mb-1">Teléfono (No editable)</label>
+                            <div
+                                class="w-full bg-white/5 border border-white/5 rounded px-3 py-2 text-gray-400 text-sm cursor-not-allowed">
+                                {{ userProfile()?.phone }}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-xs text-gray-500 block mb-1">Correo</label>
+                            <input formControlName="email" type="email"
+                                class="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-white text-sm">
+                        </div>
+
+                        <div class="pt-2 border-t border-white/5 mt-2">
+                            <label class="text-xs text-auto-accent block mb-2 font-bold">Detalles del Vehículo</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <!-- Brand -->
+                                <select formControlName="vehicleBrand"
+                                    class="col-span-2 w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-white text-sm focus:border-auto-accent outline-none appearance-none">
+                                    <option value="" disabled selected>Selecciona Marca</option>
+                                    @for (brand of vehicleBrands; track brand) {
+                                    <option [value]="brand">{{ brand }}</option>
+                                    }
+                                </select>
+
+                                <!-- Model (Dependent) -->
+                                <select formControlName="vehicleModel"
+                                    class="col-span-2 w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-white text-sm focus:border-auto-accent outline-none appearance-none"
+                                    [class.opacity-50]="!profileForm.get('vehicleBrand')?.value"
+                                    [attr.disabled]="!profileForm.get('vehicleBrand')?.value ? true : null">
+                                    <option value="" disabled selected>Selecciona Modelo</option>
+                                    @for (model of vehicleModels(); track model) {
+                                    <option [value]="model">{{ model }}</option>
+                                    }
+                                </select>
+
+                                <!-- Year -->
+                                <select formControlName="vehicleYear"
+                                    class="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-white text-sm focus:border-auto-accent outline-none appearance-none">
+                                    <option value="" disabled selected>Año</option>
+                                    @for (year of vehicleYears; track year) {
+                                    <option [value]="year">{{ year }}</option>
+                                    }
+                                </select>
+
+                                <!-- Color -->
+                                <select formControlName="vehicleColor"
+                                    class="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-white text-sm focus:border-auto-accent outline-none appearance-none">
+                                    <option value="" disabled selected>Color</option>
+                                    @for (color of vehicleColors; track color) {
+                                    <option [value]="color">{{ color }}</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2 pt-2">
+                            <button type="button" (click)="cancelEdit()"
+                                class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded text-xs font-bold">
+                                Cancelar
+                            </button>
+                            <button type="submit" [disabled]="profileForm.invalid"
+                                class="flex-1 bg-auto-accent hover:bg-red-600 text-white py-2 rounded text-xs font-bold disabled:opacity-50">
+                                Guardar
+                            </button>
+                        </div>
+                    </form>
+                    }
                 </div>
             </div>
         </div>
+
+        <!-- Pending Reservations -->
+        <div class="mb-12">
+            <h2 class="text-xl font-bold text-white mb-6 flex items-center">
+                <span class="w-2 h-8 bg-yellow-500 mr-3 rounded-full"></span>
+                Mis Reservas
+            </h2>
+
+            @if (pendingBookings().length > 0) {
+            <div class="grid md:grid-cols-2 gap-6">
+                @for (appt of pendingBookings(); track appt.id) {
+                <div class="bg-auto-carbon rounded-2xl p-6 relative overflow-hidden border transition-colors" [ngClass]="{
+                        'border-yellow-500/30': appt.status !== 'rejected',
+                        'border-red-600/50 bg-red-900/10': appt.status === 'rejected'
+                    }">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <span class="inline-block px-2 py-1 rounded text-xs font-bold uppercase mb-2" [ngClass]="{
+                                    'bg-yellow-500/10 text-yellow-500': appt.status !== 'rejected',
+                                    'bg-red-500/20 text-red-500': appt.status === 'rejected'
+                                }">
+                                {{ appt.status === 'rejected' ? 'RECHAZADA' : (appt.status === 'confirmed' ?
+                                'CONFIRMADA' : 'PENDIENTE') }}
+                            </span>
+                            <h3 class="text-xl font-bold text-white">{{ appt.serviceName }}</h3>
+                            <div class="text-gray-400 text-sm mt-1 flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                {{ appt.start.toDate() | date:'fullDate' }}
+                            </div>
+                            <div class="text-gray-400 text-sm mt-1 flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                {{ appt.start.toDate() | date:'shortTime' }}
+                            </div>
+                        </div>
+                        <div class="p-3 rounded-lg" [ngClass]="{
+                            'bg-yellow-500/5': appt.status !== 'rejected',
+                            'bg-red-500/10': appt.status === 'rejected'
+                        }">
+                            @if (appt.status === 'rejected') {
+                            <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            } @else {
+                            <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            }
+                        </div>
+                    </div>
+
+                    @if (appt.status === 'rejected') {
+                    <div class="mt-4 pt-3 border-t border-red-500/20">
+                        <div class="flex items-start gap-2">
+                            <svg class="w-4 h-4 text-red-400 mt-0.5" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <div class="w-full">
+                                <div class="text-xs text-red-400 font-bold uppercase mb-1">Motivo del rechazo</div>
+                                <p class="text-sm text-gray-300 italic mb-3">"{{ appt.rejectionReason || 'No
+                                    especificado' }}"</p>
+
+                                <button (click)="openRescheduleModal(appt)"
+                                    class="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 rounded px-4 py-2 text-sm font-bold transition-colors flex items-center justify-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                    Reagendar Cita
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    }
+                </div>
+                }
+            </div>
+            } @else {
+            <p class="text-gray-500 italic">No tienes reservas pendientes.</p>
+            }
+        </div>
+
+        <!-- Reschedule Modal -->
+        @if (rescheduleModalOpen()) {
+        <app-booking-modal [serviceName]="rescheduleAppt()?.serviceName || 'Servicio Reagendado'"
+            [serviceId]="rescheduleAppt()?.serviceId || ''" [servicePrice]="'' + (rescheduleAppt()?.price || 0)"
+            [existingAppointment]="rescheduleAppt()!" [isRescheduling]="true"
+            (close)="rescheduleModalOpen.set(false); onRescheduleComplete()">
+        </app-booking-modal>
+        }
 
         <!-- Active Services -->
         <div class="mb-12">
             <h2 class="text-xl font-bold text-white mb-6 flex items-center">
                 <span class="w-2 h-8 bg-auto-accent mr-3 rounded-full"></span>
-                Active Services
+                Servicios Activos
             </h2>
 
             @if (activeServices().length > 0) {
@@ -81,15 +279,14 @@
                 @for (service of activeServices(); track service.id) {
                 <div
                     class="bg-auto-carbon border border-auto-accent/30 rounded-2xl p-6 relative overflow-hidden group hover:border-auto-accent transition-colors">
-                    <!-- Service Card Content (Same as before but improved) -->
                     <div class="flex justify-between items-start mb-4">
                         <div>
                             <span
                                 class="inline-block px-2 py-1 bg-auto-accent/20 text-auto-accent rounded text-xs font-bold uppercase mb-2">{{
                                 service.status }}</span>
                             <h3 class="text-2xl font-bold text-white">{{ service.vehicle }}</h3>
-                            <div class="text-gray-400 text-sm uppercase tracking-widest">{{ service.licensePlate || 'NO
-                                PLATE' }}</div>
+                            <div class="text-gray-400 text-sm uppercase tracking-widest">{{ service.licensePlate || 'SIN
+                                PLACA' }}</div>
                         </div>
                         <div class="text-right">
                             <div class="text-lg font-bold text-white">{{ service.package }}</div>
@@ -108,10 +305,10 @@
             </div>
             } @else {
             <div class="bg-auto-carbon border border-white/5 rounded-2xl p-8 text-center">
-                <p class="text-gray-400 mb-4">No active services.</p>
+                <p class="text-gray-400 mb-4">No tienes servicios activos.</p>
                 <a routerLink="/services"
-                    class="text-auto-accent hover:text-white text-sm font-bold transition-colors">Book
-                    a Service -></a>
+                    class="text-auto-accent hover:text-white text-sm font-bold transition-colors">Reservar Servicio
+                    -></a>
             </div>
             }
         </div>
@@ -120,7 +317,7 @@
         <div>
             <h2 class="text-xl font-bold text-white mb-6 flex items-center">
                 <span class="w-2 h-8 bg-gray-600 mr-3 rounded-full"></span>
-                Service History
+                Historial de Servicios
             </h2>
 
             @if (historyServices().length > 0) {
@@ -128,10 +325,10 @@
                 <table class="w-full text-sm text-left">
                     <thead class="bg-black/20 text-gray-400 font-bold">
                         <tr>
-                            <th class="px-6 py-4">Date</th>
-                            <th class="px-6 py-4">Vehicle</th>
-                            <th class="px-6 py-4">Service</th>
-                            <th class="px-6 py-4 text-right">Price</th>
+                            <th class="px-6 py-4">Fecha</th>
+                            <th class="px-6 py-4">Vehículo</th>
+                            <th class="px-6 py-4">Servicio</th>
+                            <th class="px-6 py-4 text-right">Precio</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-white/5 text-gray-300">
@@ -150,7 +347,7 @@
                 </table>
             </div>
             } @else {
-            <p class="text-gray-500 italic">No completed services yet.</p>
+            <p class="text-gray-500 italic">Sin servicios completados.</p>
             }
         </div>
     </div>

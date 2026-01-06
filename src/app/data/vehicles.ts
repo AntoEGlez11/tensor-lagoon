@@ -1,0 +1,50 @@
+export const VEHICLE_BRANDS: Record<string, string[]> = {
+    'Acura': ['ILX', 'Integra', 'MDX', 'RDX', 'TLX'],
+    'Alfa Romeo': ['Giulia', 'Stelvio', 'Tonale'],
+    'Audi': ['A3', 'A4', 'A5', 'A6', 'Q3', 'Q5', 'Q7', 'Q8', 'e-tron'],
+    'BMW': ['Serie 1', 'Serie 2', 'Serie 3', 'Serie 4', 'Serie 5', 'X1', 'X3', 'X5', 'X7', 'i4', 'iX'],
+    'Buick': ['Enclave', 'Encore', 'Envision'],
+    'Cadillac': ['CT4', 'CT5', 'Escalade', 'XT4', 'XT5', 'XT6'],
+    'Chevrolet': ['Aveo', 'Blazer', 'Camaro', 'Captiva', 'Cavalier', 'Cheyenne', 'Colorado', 'Corvette', 'Equinox', 'Groove', 'Malibu', 'Onix', 'S10', 'Silverado', 'Suburban', 'Tahoe', 'Tracker', 'Traverse', 'Trax'],
+    'Chrysler': ['Pacifica'],
+    'Cupra': ['Ateca', 'Formentor', 'Leon'],
+    'Dodge': ['Attitude', 'Challenger', 'Charger', 'Durango', 'Journey'],
+    'Fiat': ['500', 'Argo', 'Mobi', 'Pulse'],
+    'Ford': ['Bronco', 'Edge', 'Escape', 'Expedition', 'Explorer', 'F-150', 'Lobo', 'Maverick', 'Mustang', 'Ranger', 'Territory'],
+    'GMC': ['Acadia', 'Canyon', 'Sierra', 'Terrain', 'Yukon'],
+    'Honda': ['Accord', 'BR-V', 'City', 'Civic', 'CR-V', 'HR-V', 'Odyssey', 'Pilot'],
+    'Hyundai': ['Creta', 'Elantra', 'Grand i10', 'HB20', 'Santa Fe', 'Tucson'],
+    'Infiniti': ['Q50', 'QX50', 'QX55', 'QX60', 'QX80'],
+    'JAC': ['E10X', 'Frison', 'J7', 'Sei2', 'Sei3', 'Sei4', 'Sei6', 'Sei7'],
+    'Jeep': ['Compass', 'Gladiator', 'Grand Cherokee', 'Renegade', 'Wrangler'],
+    'Kia': ['Forte', 'K3', 'Niro', 'Rio', 'Seltos', 'Sorento', 'Soul', 'Sportage'],
+    'Land Rover': ['Defender', 'Discovery', 'Range Rover', 'Range Rover Evoque', 'Range Rover Sport', 'Range Rover Velar'],
+    'Lexus': ['ES', 'GX', 'IS', 'LS', 'LX', 'NX', 'RX', 'UX'],
+    'Lincoln': ['Aviator', 'Corsair', 'Nautilus', 'Navigator'],
+    'Mazda': ['Mazda 2', 'Mazda 3', 'Mazda 6', 'CX-3', 'CX-30', 'CX-5', 'CX-50', 'CX-90', 'MX-5'],
+    'Mercedes-Benz': ['Clase A', 'Clase C', 'Clase CLA', 'Clase E', 'Clase G', 'Clase GLA', 'Clase GLB', 'Clase GLC', 'Clase GLE', 'Clase S'],
+    'MG': ['GT', 'HS', 'MG5', 'ONE', 'RX5', 'RX8', 'ZS'],
+    'Mini': ['Clubman', 'Convertible', 'Cooper', 'Countryman'],
+    'Mitsubishi': ['L200', 'Mirage G4', 'Montero Sport', 'Outlander', 'Xpander'],
+    'Nissan': ['Altima', 'Frontier', 'Kicks', 'March', 'Maxima', 'Murano', 'NP300', 'Pathfinder', 'Sentra', 'Urvan', 'Versa', 'X-Trail'],
+    'Peugeot': ['2008', '208', '3008', '308', '5008', 'Partner', 'Rifter'],
+    'Porsche': ['718 Boxster', '718 Cayman', '911', 'Cayenne', 'Macan', 'Panamera', 'Taycan'],
+    'Ram': ['700', '1500', '2500', '4000', 'Promaster'],
+    'Renault': ['Captur', 'Duster', 'Kwid', 'Logan', 'Oroch', 'Stepway'],
+    'Seat': ['Arona', 'Ateca', 'Ibiza', 'Leon', 'Tarraco'],
+    'Subaru': ['BRZ', 'Crosstrek', 'Forester', 'Outback', 'WRX'],
+    'Suzuki': ['Baleno', 'Ciaz', 'Ertiga', 'Grand Vitara', 'Ignis', 'Jimny', 'S-Cross', 'Swift', 'Vitara'],
+    'Tesla': ['Model 3', 'Model S', 'Model X', 'Model Y'],
+    'Toyota': ['Avanza', 'Camry', 'Corolla', 'Corolla Cross', 'Highlander', 'Hilux', 'Prius', 'RAV4', 'Sienna', 'Supra', 'Tacoma', 'Tundra', 'Yaris'],
+    'Volkswagen': ['Amarok', 'Cross Sport', 'Jetta', 'Nivus', 'Saveiro', 'Taigun', 'Taos', 'Teramont', 'Tiguan', 'Vento', 'Virtus'],
+    'Volvo': ['C40', 'S60', 'XC40', 'XC60', 'XC90'],
+    'Otro': ['Otro Modelo']
+};
+
+export const VEHICLE_YEARS: string[] = Array.from({ length: 27 }, (_, i) => (2026 - i).toString());
+
+export const VEHICLE_COLORS: string[] = [
+    'Blanco', 'Negro', 'Gris Plata', 'Gris Oxford', 'Rojo',
+    'Azul Marino', 'Azul Rey', 'Verde', 'Amarillo', 'Naranja',
+    'Café / Arena', 'Vino', 'Beige', 'Dorado', 'Bronce', 'Otro'
+];
