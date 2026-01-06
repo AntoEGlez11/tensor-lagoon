@@ -6,6 +6,12 @@ import { RouterLink } from '@angular/router';
   imports: [RouterLink],
   templateUrl: './hero.html',
   styleUrl: './hero.css',
+  styles: [`
+    :host {
+      display: block;
+      width: 100%;
+    }
+  `]
 })
 export class Hero implements OnInit, OnDestroy {
   images = [
