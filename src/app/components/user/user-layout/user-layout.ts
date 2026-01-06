@@ -1,4 +1,4 @@
-import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../services/auth';
 
@@ -11,6 +11,18 @@ import { AuthService } from '../../../services/auth';
 })
 export class UserLayout {
     private authService = inject(AuthService);
+
+    // Sidebar State
+    isDesktopExpanded = signal(false);
+
+    // Desktop Hover Handlers
+    onMouseEnter() {
+        this.isDesktopExpanded.set(true);
+    }
+
+    onMouseLeave() {
+        this.isDesktopExpanded.set(false);
+    }
 
     logout() {
         this.authService.logout();

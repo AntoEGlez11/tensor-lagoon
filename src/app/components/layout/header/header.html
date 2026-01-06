@@ -4,6 +4,7 @@
             class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 cursor-pointer hover:opacity-80 transition-opacity">
             TENSOR<span class="text-auto-accent">LAGUNA</span>
         </a>
+        <!-- Desktop Nav -->
         <nav class="hidden md:flex space-x-8">
             <a routerLink="/" routerLinkActive="text-auto-accent" [routerLinkActiveOptions]="{exact: true}"
                 class="text-sm font-medium text-gray-300 hover:text-white transition-colors cursor-pointer">INICIO</a>
@@ -14,24 +15,96 @@
             <a routerLink="/contact" routerLinkActive="text-auto-accent"
                 class="text-sm font-medium text-gray-300 hover:text-white transition-colors cursor-pointer">CONTACTO</a>
         </nav>
+
         <div class="flex items-center space-x-4">
+            <!-- Desktop Auth Buttons -->
             @if (user()) {
             <a [routerLink]="isAdmin() ? '/admin' : '/dashboard'"
                 class="text-sm font-medium text-white hover:text-auto-accent transition-colors cursor-pointer hidden md:block">
                 MI PANEL
             </a>
             <button (click)="logout()"
-                class="bg-auto-carbon border border-white/20 hover:bg-white/10 text-white px-5 py-2 rounded-full text-sm font-bold transition-colors">
+                class="hidden md:block bg-auto-carbon border border-white/20 hover:bg-white/10 text-white px-5 py-2 rounded-full text-sm font-bold transition-colors">
                 SALIR
             </button>
             } @else {
             <a routerLink="/login"
                 class="text-sm font-medium text-gray-300 hover:text-white transition-colors hidden md:block cursor-pointer">ENTRAR</a>
             <a routerLink="/register"
-                class="bg-auto-accent hover:bg-red-600 text-white px-5 py-2 rounded-full text-sm font-bold transition-transform transform hover:scale-105 cursor-pointer">
+                class="hidden md:block bg-auto-accent hover:bg-red-600 text-white px-5 py-2 rounded-full text-sm font-bold transition-transform transform hover:scale-105 cursor-pointer">
                 REGÍSTRATE
             </a>
             }
+
+            <!-- Mobile Menu Button -->
+            <button (click)="toggleMenu()" class="md:hidden text-white focus:outline-none">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    @if (isOpen()) {
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    } @else {
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    }
+                </svg>
+            </button>
         </div>
     </div>
+
+    <!-- Mobile Menu Overlay -->
+    @if (isOpen()) {
+    <div
+        class="md:hidden absolute top-16 left-0 w-full bg-auto-black/95 backdrop-blur-xl border-b border-white/10 p-6 flex flex-col space-y-6 animate-fade-in shadow-2xl h-[calc(100vh-4rem)] overflow-y-auto">
+        <a routerLink="/" (click)="closeMenu()" class="text-lg font-medium text-gray-300 hover:text-white">INICIO</a>
+        <a routerLink="/blog" (click)="closeMenu()" class="text-lg font-medium text-gray-300 hover:text-white">BLOG</a>
+        <a routerLink="/services" (click)="closeMenu()"
+            class="text-lg font-medium text-gray-300 hover:text-white">SERVICIOS</a>
+        <a routerLink="/contact" (click)="closeMenu()"
+            class="text-lg font-medium text-gray-300 hover:text-white">CONTACTO</a>
+
+        <div class="h-px bg-white/10 w-full"></div>
+
+        @if (user()) {
+        <!-- Admin Mobile Links -->
+        @if (isAdmin()) {
+        <div class="flex flex-col space-y-4 pl-4 border-l-2 border-auto-accent/20">
+            <span class="text-xs font-bold text-auto-accent uppercase tracking-wider">Administración</span>
+            <a routerLink="/admin/dashboard" (click)="closeMenu()"
+                class="text-base text-gray-400 hover:text-white">Dashboard</a>
+            <a routerLink="/admin/users" (click)="closeMenu()"
+                class="text-base text-gray-400 hover:text-white">Usuarios</a>
+            <a routerLink="/admin/services" (click)="closeMenu()" class="text-base text-gray-400 hover:text-white">CRM
+                Servicios</a>
+            <a routerLink="/admin/testimonials" (click)="closeMenu()"
+                class="text-base text-gray-400 hover:text-white">Testimonios</a>
+            <a routerLink="/admin/blog" (click)="closeMenu()" class="text-base text-gray-400 hover:text-white">Blog
+                Posts</a>
+        </div>
+        <div class="h-px bg-white/10 w-full"></div>
+        }
+
+        <!-- User Mobile Links -->
+        @if (!isAdmin()) {
+        <div class="flex flex-col space-y-4 pl-4 border-l-2 border-auto-accent/20">
+            <span class="text-xs font-bold text-auto-accent uppercase tracking-wider">Mi Cuenta</span>
+            <a routerLink="/dashboard" (click)="closeMenu()" class="text-base text-gray-400 hover:text-white">My
+                Garage</a>
+            <a routerLink="/services" (click)="closeMenu()" class="text-base text-gray-400 hover:text-white">Agendar
+                Servicio</a>
+        </div>
+        <div class="h-px bg-white/10 w-full"></div>
+        }
+
+        <button (click)="logout()"
+            class="w-full bg-auto-carbon border border-white/20 hover:bg-white/10 text-white py-3 rounded-xl font-bold">
+            SALIR
+        </button>
+        } @else {
+        <a routerLink="/login" (click)="closeMenu()"
+            class="text-lg font-medium text-gray-300 hover:text-white">ENTRAR</a>
+        <a routerLink="/register" (click)="closeMenu()"
+            class="w-full text-center bg-auto-accent hover:bg-red-600 text-white py-3 rounded-xl font-bold">
+            REGÍSTRATE
+        </a>
+        }
+    </div>
+    }
 </header>

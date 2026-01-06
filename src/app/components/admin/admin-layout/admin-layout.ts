@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet, RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth';
 
@@ -10,12 +10,23 @@ import { AuthService } from '../../../services/auth';
 })
 export class AdminLayout {
   private authService = inject(AuthService);
+  user = this.authService.user;
+
+  // Sidebar State
+  isDesktopExpanded = signal(false);
 
   constructor() {
-    console.log('AdminLayout loaded - Link should exist');
+    console.log('AdminLayout loaded');
   }
 
-  user = this.authService.user;
+  // Desktop Hover Handlers
+  onMouseEnter() {
+    this.isDesktopExpanded.set(true);
+  }
+
+  onMouseLeave() {
+    this.isDesktopExpanded.set(false);
+  }
 
   logout() {
     this.authService.logout();
