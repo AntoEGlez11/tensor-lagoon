@@ -24,6 +24,12 @@ service cloud.firestore {
       allow create: if isOwner(userId); // Explicitly allow creation
       // Admins can read and write all profiles
       allow read, write: if isAdmin();
+
+      // Vehicles Subcollection
+      match /vehicles/{vehicleId} {
+        allow read, write: if isOwner(userId);
+        allow read, write: if isAdmin();
+      }
     }
 
     // Services collection (Tickets)

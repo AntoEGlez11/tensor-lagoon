@@ -1,5 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { Firestore, collection, addDoc, query, where, getDocs, updateDoc, doc, orderBy, onSnapshot, Unsubscribe, deleteDoc, writeBatch } from '@angular/fire/firestore';
+import { Firestore, collection, addDoc, query, where, getDocs, updateDoc, doc, setDoc, orderBy, onSnapshot, Unsubscribe, deleteDoc, writeBatch } from '@angular/fire/firestore';
 
 export interface ServiceOffering {
     id?: string;
@@ -43,6 +43,17 @@ export interface UserProfile {
     vehicleYear?: string | null;   // New
     vehicleColor?: string | null;  // New
     licensePlates?: string[];
+    createdAt?: any;
+}
+
+export interface UserVehicle {
+    id?: string;
+    type: 'car' | 'moto' | 'truck';
+    brand: string;
+    model: string;
+    year: string;
+    color: string;
+    licensePlate?: string;
     createdAt?: any;
 }
 
@@ -155,7 +166,35 @@ export class CrmService {
 
     async updateUserProfile(uid: string, data: Partial<UserProfile>) {
         const docRef = doc(this.firestore, 'users', uid);
-        await updateDoc(docRef, data);
+        await setDoc(docRef, data, { merge: true });
+    }
+
+    // --- Multi-Vehicle Management ---
+
+    getUserVehicles(uid: string, callback: (vehicles: UserVehicle[]) => void): Unsubscribe {
+        const ref = collection(this.firestore, `users/${uid}/vehicles`);
+        const q = query(ref, orderBy('createdAt', 'desc'));
+
+        return onSnapshot(q, (snapshot) => {
+            const list = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            } as UserVehicle));
+            callback(list);
+        });
+    }
+
+    async addUserVehicle(uid: string, vehicle: UserVehicle) {
+        const ref = collection(this.firestore, `users/${uid}/vehicles`);
+        await addDoc(ref, {
+            ...vehicle,
+            createdAt: new Date()
+        });
+    }
+
+    async deleteUserVehicle(uid: string, vehicleId: string) {
+        const ref = doc(this.firestore, `users/${uid}/vehicles`, vehicleId);
+        await deleteDoc(ref);
     }
 
     // Lookup user by Phone or Name (Simple client-side filter for now as Firestore fuzzy search is limited)
