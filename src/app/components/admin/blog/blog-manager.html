@@ -1,18 +1,21 @@
+```
 <div>
     <header class="mb-8 flex justify-between items-center">
         <div>
-            <h1 class="text-3xl font-bold">Blog Management</h1>
-            <p class="text-gray-400">Create and manage your articles</p>
+            <h1 class="text-3xl font-black italic tracking-tighter text-white">
+                Gestión del Blog</h1>
+            <p class="text-gray-400">Crea y administra tus artículos</p>
         </div>
         <button (click)="showCreateForm.set(!showCreateForm())"
             class="bg-auto-accent hover:bg-red-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors">
-            {{ showCreateForm() ? 'Cancel' : '+ New Post' }}
+            {{ showCreateForm() ? 'Cancelar' : '+ Nuevo Post' }}
         </button>
     </header>
 
     @if (showCreateForm()) {
     <div class="bg-auto-carbon border border-white/10 rounded-xl p-6 mb-8 animate-fade-in">
-        <h2 class="text-xl font-bold mb-4">{{ editingId() ? 'Edit Post' : 'Create New Post' }}</h2>
+        <h2 class="text-2xl font-black italic tracking-tighter text-white mb-4">
+            {{ editingId() ? 'Editar Post' : 'Crear Nuevo Post' }}</h2>
         <form [formGroup]="createForm" (ngSubmit)="savePost()" class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="md:col-span-2">
                 <input formControlName="title" type="text" placeholder="Post Title"
@@ -52,7 +55,7 @@
     <div class="grid grid-cols-1 gap-4">
         @if (posts().length === 0) {
         <div class="text-center py-12 text-gray-500 bg-auto-carbon rounded-xl border border-white/5">
-            No posts found. Create your first one!
+            No hay publicaciones. ¡Crea la primera!
         </div>
         }
 

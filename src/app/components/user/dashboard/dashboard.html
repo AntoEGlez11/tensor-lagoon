@@ -322,33 +322,34 @@
 
             @if (historyServices().length > 0) {
             <div class="bg-auto-carbon rounded-xl border border-white/5 overflow-hidden">
-                <table class="w-full text-sm text-left">
-                    <thead class="bg-black/20 text-gray-400 font-bold">
-                        <tr>
-                            <th class="px-6 py-4">Fecha</th>
-                            <th class="px-6 py-4">Vehículo</th>
-                            <th class="px-6 py-4">Servicio</th>
-                            <th class="px-6 py-4 text-right">Precio</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-white/5 text-gray-300">
-                        @for (service of historyServices(); track service.id) {
-                        <tr class="hover:bg-white/5 transition-colors">
-                            <td class="px-6 py-4">{{ service.createdAt?.toDate() | date:'mediumDate' }}</td>
-                            <td class="px-6 py-4">
-                                <div class="text-white font-bold">{{ service.vehicle }}</div>
-                                <div class="text-xs text-gray-500">{{ service.licensePlate }}</div>
-                            </td>
-                            <td class="px-6 py-4">{{ service.package }}</td>
-                            <td class="px-6 py-4 text-right font-bold text-green-500">${{ service.price }}</td>
-                        </tr>
-                        }
-                    </tbody>
-                </table>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left min-w-[800px]">
+                        <thead class="bg-black/20 text-gray-400 font-bold">
+                            <tr>
+                                <th class="px-6 py-4">Fecha</th>
+                                <th class="px-6 py-4">Vehículo</th>
+                                <th class="px-6 py-4">Servicio</th>
+                                <th class="px-6 py-4 text-right">Precio</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/5 text-gray-300">
+                            @for (service of historyServices(); track service.id) {
+                            <tr class="hover:bg-white/5 transition-colors">
+                                <td class="px-6 py-4">{{ service.createdAt?.toDate() | date:'mediumDate' }}</td>
+                                <td class="px-6 py-4">
+                                    <div class="text-white font-bold">{{ service.vehicle }}</div>
+                                    <div class="text-xs text-gray-500">{{ service.licensePlate }}</div>
+                                </td>
+                                <td class="px-6 py-4">{{ service.package }}</td>
+                                <td class="px-6 py-4 text-right font-bold text-green-500">${{ service.price }}</td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </div>
             } @else {
             <p class="text-gray-500 italic">Sin servicios completados.</p>
             }
         </div>
     </div>
-</div>

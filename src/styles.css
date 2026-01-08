@@ -11,4 +11,5 @@ body {
     background-color: var(--bg-dark);
     color: white;
     font-family: 'Inter', sans-serif;
+    @apply font-black italic tracking-tighter;
 }

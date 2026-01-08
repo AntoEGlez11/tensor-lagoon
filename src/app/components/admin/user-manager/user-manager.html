@@ -1,7 +1,9 @@
+```
 <div>
     <header class="mb-8">
-        <h1 class="text-3xl font-bold">User Management</h1>
-        <p class="text-gray-400">Manage registered users and permissions</p>
+        <h1 class="text-3xl font-black italic tracking-tighter text-white">
+            Gestión de Usuarios</h1>
+        <p class="text-gray-400">Administra usuarios registrados y permisos</p>
     </header>
 
     <div class="bg-auto-carbon rounded-xl border border-white/5 overflow-hidden">
@@ -9,10 +11,10 @@
             <table class="w-full text-sm text-left">
                 <thead class="bg-black/20 text-gray-400 uppercase text-xs">
                     <tr>
-                        <th class="px-6 py-4">User</th>
-                        <th class="px-6 py-4">Role</th>
-                        <th class="px-6 py-4">Joined</th>
-                        <th class="px-6 py-4 text-right">Actions</th>
+                        <th class="px-6 py-4">Usuario</th>
+                        <th class="px-6 py-4">Rol</th>
+                        <th class="px-6 py-4">Registro</th>
+                        <th class="px-6 py-4 text-right">Acciones</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-white/5">
@@ -21,7 +23,7 @@
                         <td class="px-6 py-4 font-medium text-white">
                             {{ user.email }}
                             @if (user.uid === currentUser()?.uid) {
-                            <span class="ml-2 text-xs text-gray-500">(You)</span>
+                            <span class="ml-2 text-xs text-gray-500">(Tú)</span>
                             }
                         </td>
                         <td class="px-6 py-4">
@@ -30,7 +32,7 @@
                                 [class.text-auto-accent]="user.role === 'admin'"
                                 [class.bg-blue-500/10]="user.role === 'customer'"
                                 [class.text-blue-400]="user.role === 'customer'">
-                                {{ user.role }}
+                                {{ user.role === 'admin' ? 'Administrador' : 'Cliente' }}
                             </span>
                         </td>
                         <td class="px-6 py-4 text-gray-400">
@@ -38,7 +40,7 @@
                         </td>
                         <td class="px-6 py-4 text-right">
                             <div class="flex gap-2 justify-end">
-                                <button (click)="openDetailPanel(user)" aria-label="View User Details"
+                                <button (click)="openDetailPanel(user)" aria-label="Ver Detalles"
                                     class="text-xs font-bold px-3 py-1 rounded border border-gray-600 hover:bg-white/10 text-white transition-colors">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -49,7 +51,7 @@
                                 </button>
                                 <button (click)="openEditModal(user)"
                                     class="text-xs font-bold px-3 py-1 rounded border border-gray-600 hover:bg-white/10 text-white transition-colors">
-                                    Edit
+                                    Editar
                                 </button>
                                 @if (user.uid !== currentUser()?.uid) {
                                 <button (click)="toggleRole(user)"
@@ -60,7 +62,7 @@
                                     [class.border-auto-accent]="user.role === 'customer'"
                                     [class.text-auto-accent]="user.role === 'customer'"
                                     [class.hover:bg-auto-accent/10]="user.role === 'customer'">
-                                    {{ user.role === 'admin' ? 'Revoke' : 'Promote' }}
+                                    {{ user.role === 'admin' ? 'Revocar' : 'Promover' }}
                                 </button>
                                 }
                             </div>
@@ -73,7 +75,7 @@
 
         @if (users().length === 0) {
         <div class="p-8 text-center text-gray-500">
-            No users found.
+            No se encontraron usuarios.
         </div>
         }
     </div>
@@ -95,15 +97,16 @@
                         <div class="px-4 py-6 sm:px-6 border-b border-white/5 bg-black/20">
                             <div class="flex items-start justify-between">
                                 <div>
-                                    <h2 class="text-xl font-bold leading-6 text-white" id="slide-over-title">{{ u.name
-                                        || 'User Profile' }}</h2>
+                                    <h2 class="text-2xl font-black italic tracking-tighter text-white"
+                                        id="slide-over-title">{{ u.name
+                                        || 'Perfil de Usuario' }}</h2>
                                     <p class="mt-1 text-sm text-gray-400">UID: {{ u.uid }}</p>
                                 </div>
                                 <div class="ml-3 flex h-7 items-center">
                                     <button type="button" (click)="closeDetailPanel()"
                                         class="relative rounded-md text-gray-400 hover:text-white focus:outline-none">
                                         <span class="absolute -inset-2.5"></span>
-                                        <span class="sr-only">Close panel</span>
+                                        <span class="sr-only">Cerrar panel</span>
                                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                                             stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -126,34 +129,34 @@
                                     [class.bg-blue-500/10]="u.role === 'customer'"
                                     [class.text-blue-400]="u.role === 'customer'">
                                     <div class="w-2 h-2 rounded-full bg-current"></div>
-                                    {{ u.role }}
+                                    {{ u.role === 'admin' ? 'Administrador' : 'Cliente' }}
                                 </span>
                             </div>
 
                             <!-- Contact Info -->
                             <div>
-                                <h3 class="text-sm font-medium text-auto-accent uppercase tracking-wider mb-3">Contact
-                                    Information</h3>
+                                <h3 class="text-sm font-medium text-auto-accent uppercase tracking-wider mb-3">
+                                    Información de Contacto</h3>
                                 <div class="grid grid-cols-1 gap-4 bg-white/5 rounded-lg p-4 border border-white/5">
                                     <div>
                                         <label class="block text-xs text-gray-400 mb-1">Email</label>
                                         <div class="text-white">{{ u.email }}</div>
                                     </div>
                                     <div>
-                                        <label class="block text-xs text-gray-400 mb-1">Phone</label>
-                                        <div class="text-white font-mono">{{ u.phone || 'Not provided' }}</div>
+                                        <label class="block text-xs text-gray-400 mb-1">Teléfono</label>
+                                        <div class="text-white font-mono">{{ u.phone || 'No provisto' }}</div>
                                     </div>
                                     <div>
-                                        <label class="block text-xs text-gray-400 mb-1">Address</label>
-                                        <div class="text-white">{{ u.address || 'Not provided' }}</div>
+                                        <label class="block text-xs text-gray-400 mb-1">Dirección</label>
+                                        <div class="text-white">{{ u.address || 'No provista' }}</div>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Vehicle Info -->
                             <div>
-                                <h3 class="text-sm font-medium text-auto-accent uppercase tracking-wider mb-3">Vehicle
-                                    Details</h3>
+                                <h3 class="text-sm font-medium text-auto-accent uppercase tracking-wider mb-3">Detalles
+                                    del Vehículo</h3>
                                 <div
                                     class="bg-gradient-to-br from-white/10 to-transparent rounded-lg p-4 border border-white/5 relative overflow-hidden">
                                     <div
@@ -162,12 +165,12 @@
 
                                     <div class="grid grid-cols-2 gap-4 relative z-10">
                                         <div>
-                                            <label class="block text-xs text-gray-400 mb-1">Make/Model</label>
+                                            <label class="block text-xs text-gray-400 mb-1">Marca/Modelo</label>
                                             <div class="text-lg font-bold text-white">{{ u.vehicleModel || 'N/A' }}
                                             </div>
                                         </div>
                                         <div>
-                                            <label class="block text-xs text-gray-400 mb-1">Year</label>
+                                            <label class="block text-xs text-gray-400 mb-1">Año</label>
                                             <div class="text-lg font-bold text-white">{{ u.vehicleYear || 'N/A' }}</div>
                                         </div>
                                         <div>
@@ -177,10 +180,10 @@
                                             </div>
                                         </div>
                                         <div>
-                                            <label class="block text-xs text-gray-400 mb-1">License Plates</label>
+                                            <label class="block text-xs text-gray-400 mb-1">Placas</label>
                                             <div
                                                 class="text-white font-mono bg-black/30 px-2 py-1 rounded inline-block">
-                                                {{ u.licensePlates?.length ? u.licensePlates : 'No plates' }}
+                                                {{ u.licensePlates?.length ? u.licensePlates : 'Sin placas' }}
                                             </div>
                                         </div>
                                     </div>
@@ -190,9 +193,9 @@
                             <!-- Meta -->
                             <div class="border-t border-white/5 pt-4">
                                 <div class="flex justify-between text-xs text-gray-500">
-                                    <span>Joined</span>
+                                    <span>Registro</span>
                                     <span>{{ u.createdAt?.seconds ? (u.createdAt.seconds * 1000 | date:'longDate') :
-                                        'Unknown' }}</span>
+                                        'Desconocido' }}</span>
                                 </div>
                             </div>
 
@@ -203,11 +206,11 @@
                             <div class="flex justify-end gap-3">
                                 <button type="button" (click)="closeDetailPanel()"
                                     class="rounded-md bg-transparent px-3 py-2 text-sm font-semibold text-gray-400 hover:text-white border border-gray-600 hover:bg-white/5">
-                                    Close
+                                    Cerrar
                                 </button>
                                 <button type="button" (click)="openEditModal(u)"
                                     class="inline-flex justify-center rounded-md bg-auto-accent px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
-                                    Edit Profile
+                                    Editar Perfil
                                 </button>
                             </div>
                         </div>
@@ -223,7 +226,9 @@
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
         <div class="bg-auto-carbon border border-white/10 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div class="px-6 py-4 border-b border-white/5 flex justify-between items-center">
-                <h3 class="text-xl font-bold text-white">Edit User</h3>
+                <h3
+                    class="text-2xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-gray-500">
+                    Editar Usuario</h3>
                 <button (click)="closeEditModal()" class="text-gray-400 hover:text-white">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
@@ -235,20 +240,20 @@
             <form [formGroup]="editForm" (ngSubmit)="saveUser()" class="p-6 space-y-6">
                 <!-- Personal Info -->
                 <div class="space-y-4">
-                    <h4 class="text-auto-accent font-bold uppercase text-xs tracking-wider">Personal Information</h4>
+                    <h4 class="text-auto-accent font-bold uppercase text-xs tracking-wider">Información Personal</h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-gray-400 mb-1">Full Name</label>
+                            <label class="block text-xs font-bold text-gray-400 mb-1">Nombre Completo</label>
                             <input type="text" formControlName="name"
                                 class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-auto-accent transition-colors">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-400 mb-1">Phone</label>
+                            <label class="block text-xs font-bold text-gray-400 mb-1">Teléfono</label>
                             <input type="tel" formControlName="phone"
                                 class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-auto-accent transition-colors">
                         </div>
                         <div class="col-span-1 md:col-span-2">
-                            <label class="block text-xs font-bold text-gray-400 mb-1">Address</label>
+                            <label class="block text-xs font-bold text-gray-400 mb-1">Dirección</label>
                             <input type="text" formControlName="address"
                                 class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-auto-accent transition-colors">
                         </div>
@@ -257,21 +262,21 @@
 
                 <!-- Vehicle Info -->
                 <div class="space-y-4">
-                    <h4 class="text-auto-accent font-bold uppercase text-xs tracking-wider">Vehicle Details</h4>
+                    <h4 class="text-auto-accent font-bold uppercase text-xs tracking-wider">Detalles del Vehículo</h4>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-gray-400 mb-1">Model</label>
-                            <input type="text" formControlName="vehicleModel" placeholder="e.g. BMW X5"
+                            <label class="block text-xs font-bold text-gray-400 mb-1">Modelo</label>
+                            <input type="text" formControlName="vehicleModel" placeholder="ej. BMW X5"
                                 class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-auto-accent transition-colors">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-400 mb-1">Year</label>
-                            <input type="text" formControlName="vehicleYear" placeholder="e.g. 2023"
+                            <label class="block text-xs font-bold text-gray-400 mb-1">Año</label>
+                            <input type="text" formControlName="vehicleYear" placeholder="ej. 2023"
                                 class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-auto-accent transition-colors">
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-gray-400 mb-1">Color</label>
-                            <input type="text" formControlName="vehicleColor" placeholder="e.g. Black"
+                            <input type="text" formControlName="vehicleColor" placeholder="ej. Negro"
                                 class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-auto-accent transition-colors">
                         </div>
                     </div>
@@ -279,13 +284,13 @@
 
                 <!-- Permissions -->
                 <div class="space-y-4">
-                    <h4 class="text-auto-accent font-bold uppercase text-xs tracking-wider">Permissions</h4>
+                    <h4 class="text-auto-accent font-bold uppercase text-xs tracking-wider">Permisos</h4>
                     <div>
-                        <label class="block text-xs font-bold text-gray-400 mb-1">Role</label>
+                        <label class="block text-xs font-bold text-gray-400 mb-1">Rol</label>
                         <select formControlName="role"
                             class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-auto-accent transition-colors">
-                            <option value="customer">Customer</option>
-                            <option value="admin">Administrator</option>
+                            <option value="customer">Cliente</option>
+                            <option value="admin">Administrador</option>
                         </select>
                     </div>
                 </div>
@@ -293,11 +298,11 @@
                 <div class="flex justify-end gap-3 pt-6 border-t border-white/5">
                     <button type="button" (click)="closeEditModal()"
                         class="px-4 py-2 text-sm font-bold text-gray-400 hover:text-white transition-colors">
-                        Cancel
+                        Cancelar
                     </button>
                     <button type="submit" [disabled]="editForm.invalid"
                         class="px-6 py-2 bg-auto-accent hover:bg-red-600 text-white text-sm font-bold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                        Save Changes
+                        Guardar Cambios
                     </button>
                 </div>
             </form>

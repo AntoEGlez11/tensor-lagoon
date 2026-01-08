@@ -22,8 +22,13 @@ export const customerGuard: CanActivateFn = (route, state) => {
         // If we want to be robust:
         take(1),
         map(profile => {
+            if (!profile) {
+                // Should be caught by authGuard, but just in case:
+                return router.createUrlTree(['/login']);
+            }
+
             // If profile is admin, BLOCK access to customer routes -> go to admin
-            if (profile?.role === 'admin') {
+            if (profile.role === 'admin') {
                 return router.createUrlTree(['/admin']);
             }
             return true;

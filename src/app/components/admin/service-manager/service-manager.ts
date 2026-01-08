@@ -22,8 +22,8 @@ export class ServiceManager implements OnInit, OnDestroy {
     editingId = signal<string | null>(null);
 
     form = this.fb.nonNullable.group({
-        title: ['', Validators.required],
-        price: ['', Validators.required],
+        title: ['', [Validators.required, Validators.maxLength(100), Validators.minLength(3)]],
+        price: ['', [Validators.required, Validators.min(0)]],
         features: this.fb.array<string>([]),
         recommended: [false]
     });

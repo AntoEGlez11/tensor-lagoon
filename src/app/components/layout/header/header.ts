@@ -12,6 +12,7 @@ import { AuthService } from '../../../services/auth';
 export class Header {
   auth = inject(AuthService);
   user = this.auth.user;
+  profile = this.auth.userProfile;
   isAdmin = this.auth.isAdmin;
 
   isOpen = signal(false);

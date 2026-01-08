@@ -1,35 +1,38 @@
 <header class="fixed top-0 left-0 w-full z-50 bg-auto-black/80 backdrop-blur-md border-b border-white/10">
     <div class="container mx-auto px-6 h-16 flex items-center justify-between">
         <a routerLink="/"
-            class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 cursor-pointer hover:opacity-80 transition-opacity">
+            class="text-2xl font-black italic tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-500 cursor-pointer hover:opacity-80 transition-opacity">
             eStrada<span class="text-auto-accent">CarDetail</span>
         </a>
         <!-- Desktop Nav -->
         <nav class="hidden md:flex space-x-8">
             <a routerLink="/" routerLinkActive="text-auto-accent" [routerLinkActiveOptions]="{exact: true}"
-                class="text-sm font-medium text-gray-300 hover:text-white transition-colors cursor-pointer">INICIO</a>
+                class="text-sm font-black italic tracking-tighter text-gray-300 hover:text-white transition-colors cursor-pointer">INICIO</a>
             <a routerLink="/blog" routerLinkActive="text-auto-accent"
-                class="text-sm font-medium text-gray-300 hover:text-white transition-colors cursor-pointer">BLOG</a>
+                class="text-sm font-black italic tracking-tighter text-gray-300 hover:text-white transition-colors cursor-pointer">BLOG</a>
             <a routerLink="/services" routerLinkActive="text-auto-accent"
-                class="text-sm font-medium text-gray-300 hover:text-white transition-colors cursor-pointer">SERVICIOS</a>
+                class="text-sm font-black italic tracking-tighter text-gray-300 hover:text-white transition-colors cursor-pointer">SERVICIOS</a>
             <a routerLink="/contact" routerLinkActive="text-auto-accent"
-                class="text-sm font-medium text-gray-300 hover:text-white transition-colors cursor-pointer">CONTACTO</a>
+                class="text-sm font-black italic tracking-tighter text-gray-300 hover:text-white transition-colors cursor-pointer">CONTACTO</a>
         </nav>
 
         <div class="flex items-center space-x-4">
             <!-- Desktop Auth Buttons -->
             @if (user()) {
             <a [routerLink]="isAdmin() ? '/admin' : '/dashboard'"
-                class="text-sm font-medium text-white hover:text-auto-accent transition-colors cursor-pointer hidden md:block">
-                MI PANEL
+                class="flex items-center gap-3 pl-4 border-l border-white/10 hover:opacity-80 transition-opacity cursor-pointer hidden md:flex">
+                <div class="text-right hidden lg:block">
+                    <p class="text-xs text-auto-accent font-bold uppercase tracking-wider">Mi Cuenta</p>
+                    <p class="text-sm font-bold text-white leading-none">{{ profile()?.name || 'Panel' }}</p>
+                </div>
+                <div
+                    class="w-9 h-9 rounded-full bg-auto-carbon border border-white/20 flex items-center justify-center text-white text-sm font-bold">
+                    {{ (profile()?.name || user()?.email || 'U').charAt(0).toUpperCase() }}
+                </div>
             </a>
-            <button (click)="logout()"
-                class="hidden md:block bg-auto-carbon border border-white/20 hover:bg-white/10 text-white px-5 py-2 rounded-full text-sm font-bold transition-colors">
-                SALIR
-            </button>
             } @else {
             <a routerLink="/login"
-                class="text-sm font-medium text-gray-300 hover:text-white transition-colors hidden md:block cursor-pointer">ENTRAR</a>
+                class="text-sm font-black italic tracking-tighter text-gray-300 hover:text-white transition-colors hidden md:block cursor-pointer">ENTRAR</a>
             <a routerLink="/register"
                 class="hidden md:block bg-auto-accent hover:bg-red-600 text-white px-5 py-2 rounded-full text-sm font-bold transition-transform transform hover:scale-105 cursor-pointer">
                 REGÍSTRATE
@@ -53,12 +56,14 @@
     @if (isOpen()) {
     <div
         class="md:hidden absolute top-16 left-0 w-full bg-auto-black/95 backdrop-blur-xl border-b border-white/10 p-6 flex flex-col space-y-6 animate-fade-in shadow-2xl h-[calc(100vh-4rem)] overflow-y-auto">
-        <a routerLink="/" (click)="closeMenu()" class="text-lg font-medium text-gray-300 hover:text-white">INICIO</a>
-        <a routerLink="/blog" (click)="closeMenu()" class="text-lg font-medium text-gray-300 hover:text-white">BLOG</a>
+        <a routerLink="/" (click)="closeMenu()"
+            class="text-lg font-black italic tracking-tighter text-gray-300 hover:text-white">INICIO</a>
+        <a routerLink="/blog" (click)="closeMenu()"
+            class="text-lg font-black italic tracking-tighter text-gray-300 hover:text-white">BLOG</a>
         <a routerLink="/services" (click)="closeMenu()"
-            class="text-lg font-medium text-gray-300 hover:text-white">SERVICIOS</a>
+            class="text-lg font-black italic tracking-tighter text-gray-300 hover:text-white">SERVICIOS</a>
         <a routerLink="/contact" (click)="closeMenu()"
-            class="text-lg font-medium text-gray-300 hover:text-white">CONTACTO</a>
+            class="text-lg font-black italic tracking-tighter text-gray-300 hover:text-white">CONTACTO</a>
 
         <div class="h-px bg-white/10 w-full"></div>
 
@@ -68,15 +73,14 @@
         <div class="flex flex-col space-y-4 pl-4 border-l-2 border-auto-accent/20">
             <span class="text-xs font-bold text-auto-accent uppercase tracking-wider">Administración</span>
             <a routerLink="/admin/dashboard" (click)="closeMenu()"
-                class="text-base text-gray-400 hover:text-white">Dashboard</a>
+                class="text-base text-gray-400 hover:text-white">Panel</a>
             <a routerLink="/admin/users" (click)="closeMenu()"
                 class="text-base text-gray-400 hover:text-white">Usuarios</a>
             <a routerLink="/admin/services" (click)="closeMenu()" class="text-base text-gray-400 hover:text-white">CRM
                 Servicios</a>
             <a routerLink="/admin/testimonials" (click)="closeMenu()"
                 class="text-base text-gray-400 hover:text-white">Testimonios</a>
-            <a routerLink="/admin/blog" (click)="closeMenu()" class="text-base text-gray-400 hover:text-white">Blog
-                Posts</a>
+            <a routerLink="/admin/blog" (click)="closeMenu()" class="text-base text-gray-400 hover:text-white">Blog</a>
         </div>
         <div class="h-px bg-white/10 w-full"></div>
         }
@@ -85,7 +89,7 @@
         @if (!isAdmin()) {
         <div class="flex flex-col space-y-4 pl-4 border-l-2 border-auto-accent/20">
             <span class="text-xs font-bold text-auto-accent uppercase tracking-wider">Mi Cuenta</span>
-            <a routerLink="/dashboard" (click)="closeMenu()" class="text-base text-gray-400 hover:text-white">My
+            <a routerLink="/dashboard" (click)="closeMenu()" class="text-base text-gray-400 hover:text-white">Mi
                 Garage</a>
             <a routerLink="/services" (click)="closeMenu()" class="text-base text-gray-400 hover:text-white">Agendar
                 Servicio</a>
@@ -99,7 +103,7 @@
         </button>
         } @else {
         <a routerLink="/login" (click)="closeMenu()"
-            class="text-lg font-medium text-gray-300 hover:text-white">ENTRAR</a>
+            class="text-lg font-black italic tracking-tighter text-gray-300 hover:text-white">ENTRAR</a>
         <a routerLink="/register" (click)="closeMenu()"
             class="w-full text-center bg-auto-accent hover:bg-red-600 text-white py-3 rounded-xl font-bold">
             REGÍSTRATE

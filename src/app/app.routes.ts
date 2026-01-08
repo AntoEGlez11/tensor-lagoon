@@ -10,6 +10,8 @@ export const routes: Routes = [
     { path: 'blog/:id', loadComponent: () => import('./components/public/blog/post-detail/post-detail').then(m => m.PostDetail) },
     { path: 'services', loadComponent: () => import('./components/public/services/services').then(m => m.Services) },
     { path: 'contact', loadComponent: () => import('./components/public/contact/contact').then(m => m.Contact) },
+    { path: 'privacy', loadComponent: () => import('./components/public/legal/privacy-policy/privacy-policy').then(m => m.PrivacyPolicy) },
+    { path: 'terms', loadComponent: () => import('./components/public/legal/terms-of-service/terms-of-service').then(m => m.TermsOfService) },
     {
         path: 'admin',
         canActivate: [authGuard, adminGuard], // Chain guards: Login First -> Then Check Admin

@@ -1,46 +1,47 @@
 <div class="space-y-6">
     <div class="flex justify-between items-center mb-8">
         <div>
-            <h2 class="text-3xl font-bold text-white mb-2">Service Offerings</h2>
-            <p class="text-gray-400">Manage the packages shown on the public website.</p>
+            <h2 class="text-3xl font-black italic tracking-tighter text-white mb-2">
+                Catálogo de Servicios</h2>
+            <p class="text-gray-400">Administra los paquetes mostrados en el sitio web.</p>
         </div>
         <button (click)="startEdit()"
             class="bg-auto-accent hover:bg-red-600 text-white px-6 py-2 rounded-lg font-bold transition-all flex items-center gap-2">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
             </svg>
-            Add New Package
+            Agregar Nuevo Paquete
         </button>
     </div>
 
     @if (showCreateForm()) {
     <div class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div class="bg-auto-carbon border border-white/10 rounded-xl p-8 max-w-2xl w-full">
-            <h3 class="text-2xl font-bold text-white mb-6">
-                {{ editingId() ? 'Edit Package' : 'New Package' }}
+            <h3 class="text-2xl font-black italic tracking-tighter text-white mb-6">
+                {{ editingId() ? 'Editar Paquete' : 'Nuevo Paquete' }}
             </h3>
 
             <form [formGroup]="form" (ngSubmit)="save()" class="space-y-6">
                 <div class="grid grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-400 mb-2">Package Title</label>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Título del Paquete</label>
                         <input type="text" formControlName="title"
                             class="w-full bg-auto-black border border-white/10 rounded-lg px-4 py-3 text-white focus:border-auto-accent focus:outline-none"
-                            placeholder="e.g. Ceramic Pro">
+                            placeholder="ej. Cerámico Pro">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-400 mb-2">Price Display</label>
+                        <label class="block text-sm font-medium text-gray-400 mb-2">Precio Visible</label>
                         <input type="text" formControlName="price"
                             class="w-full bg-auto-black border border-white/10 rounded-lg px-4 py-3 text-white focus:border-auto-accent focus:outline-none"
-                            placeholder="e.g. $250 or 'Custom'">
+                            placeholder="ej. $250 o 'Personalizado'">
                     </div>
                 </div>
 
                 <div>
                     <div class="flex justify-between items-center mb-2">
-                        <label class="block text-sm font-medium text-gray-400">Features List</label>
+                        <label class="block text-sm font-medium text-gray-400">Lista de Características</label>
                         <button type="button" (click)="addFeature()" class="text-xs text-auto-accent hover:underline">+
-                            Add Line</button>
+                            Agregar Línea</button>
                     </div>
 
                     <div formArrayName="features" class="space-y-2 max-h-40 overflow-y-auto pr-2">
@@ -48,7 +49,7 @@
                         <div class="flex gap-2">
                             <input [formControlName]="$index"
                                 class="w-full bg-auto-black border border-white/10 rounded-lg px-4 py-2 text-white text-sm focus:border-auto-accent focus:outline-none"
-                                placeholder="Feature description">
+                                placeholder="Descripción de la característica">
                             <button type="button" (click)="removeFeature($index)"
                                 class="text-gray-500 hover:text-red-500">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -64,17 +65,17 @@
                 <div class="flex items-center gap-3">
                     <input type="checkbox" formControlName="recommended" id="rec"
                         class="w-5 h-5 rounded border-gray-600 bg-auto-black text-auto-accent focus:ring-auto-accent">
-                    <label for="rec" class="text-white cursor-pointer">Mark as "Most Popular" / Recommended</label>
+                    <label for="rec" class="text-white cursor-pointer">Marcar como "Más Popular" / Recomendado</label>
                 </div>
 
                 <div class="flex justify-end gap-3 pt-4 border-t border-white/10">
                     <button type="button" (click)="cancelEdit()"
                         class="px-6 py-2 text-gray-400 hover:text-white font-medium transition-colors">
-                        Cancel
+                        Cancelar
                     </button>
                     <button type="submit" [disabled]="form.invalid"
                         class="bg-auto-accent hover:bg-red-600 disabled:opacity-50 text-white px-8 py-2 rounded-lg font-bold transition-all">
-                        {{ editingId() ? 'Update Package' : 'Create Package' }}
+                        {{ editingId() ? 'Actualizar Paquete' : 'Crear Paquete' }}
                     </button>
                 </div>
             </form>
@@ -109,7 +110,7 @@
                 class="absolute -top-3 left-4 bg-auto-accent text-white text-xs font-bold px-3 py-1 rounded-full">POPULAR</span>
             }
 
-            <h3 class="text-xl font-bold text-white mb-2">{{ offer.title }}</h3>
+            <h3 class="text-xl font-black italic tracking-tighter text-white mb-2">{{ offer.title }}</h3>
             <div class="text-2xl font-bold text-auto-accent mb-4">{{ offer.price }}</div>
 
             <ul class="space-y-2 text-sm text-gray-400">
@@ -125,7 +126,7 @@
 
         @if (offerings().length === 0) {
         <div class="col-span-full py-12 text-center text-gray-500 border border-dashed border-white/10 rounded-xl">
-            <p>No services defined yet. Click "Add New Package" to start.</p>
+            <p>No hay servicios definidos aún. Haz clic en "Agregar Nuevo Paquete" para comenzar.</p>
         </div>
         }
     </div>

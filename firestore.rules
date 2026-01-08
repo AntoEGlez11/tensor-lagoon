@@ -34,16 +34,22 @@ service cloud.firestore {
       // Customers can read their own services
       allow read: if isAuthenticated() && (resource.data.customerId == request.auth.uid);
       
-      // Customers can create tickets (status must be pending)
+      // Customers can create tickets
       allow create: if isAuthenticated() && 
                       request.resource.data.customerId == request.auth.uid &&
-                      request.resource.data.status == 'pending';
+                      request.resource.data.status == 'pending' &&
+                      // Validate essential fields
+                      request.resource.data.vehicle is string &&
+                      request.resource.data.vehicle.size() > 0 &&
+                      request.resource.data.package is string;
     }
 
     // Service Offerings (Catalog)
     match /service-offerings/{offeringId} {
-      allow read: if true; // Public catalog
-      allow write: if isAdmin();
+      allow read: if true;
+      allow write: if isAdmin() && 
+                    (!request.resource.data.keys().hasAny(['price']) || request.resource.data.price is string) &&
+                    (!request.resource.data.keys().hasAny(['title']) || request.resource.data.title.size() > 0);
     }
     
     // Testimonials

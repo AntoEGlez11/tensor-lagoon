@@ -1,8 +1,9 @@
 <div>
     <header class="mb-8 flex justify-between items-center">
         <div>
-            <h1 class="text-3xl font-bold">Panel de Control</h1>
-            <p class="text-gray-400">Gestiona la cola de servicios</p>
+            <h1 class="text-3xl font-black italic tracking-tighter text-white mb-2">
+                ¡Hola, {{ profile()?.displayName || 'Admin' }}!</h1>
+            <p class="text-gray-400">Aquí está lo que está pasando en su negocio hoy.</p>
         </div>
         <div class="flex gap-2">
             <button (click)="fixUserData()"
@@ -258,100 +259,100 @@
         <div class="p-6 border-b border-white/5">
             <h3 class="font-bold">Cola de Servicios Activos</h3>
         </div>
-        <table class="w-full text-sm">
-            <thead class="bg-black/20 text-gray-400">
-                <tr>
-                    <th class="px-6 py-3 text-left">Vehículo</th>
-                    <th class="px-6 py-3 text-left">Servicio</th>
-                    <th class="px-6 py-3 text-left">Cliente</th>
-                    <th class="px-6 py-3 text-left">Estado</th>
-                    <th class="px-6 py-3 text-right">Acciones</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-white/5">
-                @for (ticket of services(); track ticket.id) {
-                <tr class="hover:bg-white/5 transition-colors">
-                    <td class="px-6 py-4">
-                        <div class="font-bold text-white">{{ ticket.vehicle }}</div>
-                        <div class="text-xs text-gray-400 uppercase tracking-widest">{{ ticket.licensePlate || 'SIN
-                            PLACA' }}</div>
-                    </td>
-                    <td class="px-6 py-4">{{ ticket.package }}</td>
-                    <td class="px-6 py-4">
-                        <div class="text-white">{{ ticket.customerName || 'Desconocido' }}</div>
-                        <div class="text-xs text-gray-500">{{ ticket.customerPhone }}</div>
-                    </td>
-                    <td class="px-6 py-4">
-                        <span class="px-2 py-1 rounded text-xs uppercase font-bold"
-                            [class.bg-yellow-500_20]="ticket.status === 'pending'"
-                            [class.text-yellow-500]="ticket.status === 'pending'"
-                            [class.bg-blue-500_20]="ticket.status === 'in-progress'"
-                            [class.text-blue-500]="ticket.status === 'in-progress'"
-                            [class.bg-green-500_20]="ticket.status === 'ready'"
-                            [class.text-green-500]="ticket.status === 'ready'"
-                            [class.bg-gray-500_20]="ticket.status === 'completed'"
-                            [class.text-gray-500]="ticket.status === 'completed'">
-                            {{ ticket.status }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 text-right space-x-2">
-                        @if (ticket.status === 'pending') {
-                        <button (click)="updateStatus(ticket.id!, 'in-progress')"
-                            class="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">Iniciar</button>
-                        }
-                        @if (ticket.status === 'in-progress') {
-                        <button (click)="updateStatus(ticket.id!, 'ready')"
-                            class="text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">Terminar</button>
-                        }
-                        @if (ticket.status === 'ready') {
-                        <button (click)="updateStatus(ticket.id!, 'completed')"
-                            class="text-xs bg-gray-600 text-white px-2 py-1 rounded hover:bg-gray-700">Cerrar</button>
-                        }
-                    </td>
-                </tr>
-                }
-            </tbody>
-        </table>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm min-w-[800px]">
+                <thead class="bg-black/20 text-gray-400">
+                    <tr>
+                        <th class="px-6 py-3 text-left">Vehículo</th>
+                        <th class="px-6 py-3 text-left">Servicio</th>
+                        <th class="px-6 py-3 text-left">Cliente</th>
+                        <th class="px-6 py-3 text-left">Estado</th>
+                        <th class="px-6 py-3 text-right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                    @for (ticket of services(); track ticket.id) {
+                    <tr class="hover:bg-white/5 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-white">{{ ticket.vehicle }}</div>
+                            <div class="text-xs text-gray-400 uppercase tracking-widest">{{ ticket.licensePlate || 'SIN
+                                PLACA' }}</div>
+                        </td>
+                        <td class="px-6 py-4">{{ ticket.package }}</td>
+                        <td class="px-6 py-4">
+                            <div class="text-white">{{ ticket.customerName || 'Desconocido' }}</div>
+                            <div class="text-xs text-gray-500">{{ ticket.customerPhone }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 rounded text-xs uppercase font-bold"
+                                [class.bg-yellow-500_20]="ticket.status === 'pending'"
+                                [class.text-yellow-500]="ticket.status === 'pending'"
+                                [class.bg-blue-500_20]="ticket.status === 'in-progress'"
+                                [class.text-blue-500]="ticket.status === 'in-progress'"
+                                [class.bg-green-500_20]="ticket.status === 'ready'"
+                                [class.text-green-500]="ticket.status === 'ready'"
+                                [class.text-gray-500]="ticket.status === 'completed'">
+                                {{ statusLabels[ticket.status] || ticket.status }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-right space-x-2">
+                            @if (ticket.status === 'pending') {
+                            <button (click)="updateStatus(ticket.id!, 'in-progress')"
+                                class="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">Iniciar</button>
+                            }
+                            @if (ticket.status === 'in-progress') {
+                            <button (click)="updateStatus(ticket.id!, 'ready')"
+                                class="text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">Terminar</button>
+                            }
+                            @if (ticket.status === 'ready') {
+                            <button (click)="updateStatus(ticket.id!, 'completed')"
+                                class="text-xs bg-gray-600 text-white px-2 py-1 rounded hover:bg-gray-700">Cerrar</button>
+                            }
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
+</div>
 
-    <!-- Rejection Modal -->
-    @if (rejectionModalOpen()) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-        <div class="bg-auto-carbon w-full max-w-md rounded-xl border border-white/10 p-6 shadow-2xl">
-            <h3 class="text-xl font-bold text-white mb-4">Rechazar Reserva</h3>
-            <p class="text-gray-400 text-sm mb-4">
-                El cliente será notificado del rechazo. Por favor indica el motivo.
-            </p>
+<!-- Rejection Modal -->
+@if (rejectionModalOpen()) {
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+    <div class="bg-auto-carbon w-full max-w-md rounded-xl border border-white/10 p-6 shadow-2xl">
+        <h3 class="text-xl font-bold text-white mb-4">Rechazar Reserva</h3>
+        <p class="text-gray-400 text-sm mb-4">
+            El cliente será notificado del rechazo. Por favor indica el motivo.
+        </p>
 
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs text-gray-500 mb-1">Motivo del rechazo</label>
-                    <select [formControl]="rejectionReasonControl"
-                        class="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-white">
-                        <option value="" disabled>Selecciona un motivo</option>
-                        @for(reason of rejectionOptions; track reason) {
-                        <option [value]="reason">{{ reason }}</option>
-                        }
-                    </select>
-                </div>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Motivo del rechazo</label>
+                <select [formControl]="rejectionReasonControl"
+                    class="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-white">
+                    <option value="" disabled>Selecciona un motivo</option>
+                    @for(reason of rejectionOptions; track reason) {
+                    <option [value]="reason">{{ reason }}</option>
+                    }
+                </select>
+            </div>
 
-                @if (rejectionReasonControl.value === 'Otro') {
-                <textarea placeholder="Especifica el motivo..."
-                    class="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-white h-24"></textarea>
-                }
+            @if (rejectionReasonControl.value === 'Otro') {
+            <textarea placeholder="Especifica el motivo..."
+                class="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-white h-24"></textarea>
+            }
 
-                <div class="flex justify-end gap-3 mt-6">
-                    <button (click)="closeRejectModal()"
-                        class="px-4 py-2 text-gray-300 hover:text-white transition-colors">
-                        Cancelar
-                    </button>
-                    <button (click)="confirmRejection()" [disabled]="rejectionReasonControl.invalid"
-                        class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded font-bold disabled:opacity-50">
-                        Confirmar Rechazo
-                    </button>
-                </div>
+            <div class="flex justify-end gap-3 mt-6">
+                <button (click)="closeRejectModal()" class="px-4 py-2 text-gray-300 hover:text-white transition-colors">
+                    Cancelar
+                </button>
+                <button (click)="confirmRejection()" [disabled]="rejectionReasonControl.invalid"
+                    class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded font-bold disabled:opacity-50">
+                    Confirmar Rechazo
+                </button>
             </div>
         </div>
     </div>
-    }
 </div>
+}

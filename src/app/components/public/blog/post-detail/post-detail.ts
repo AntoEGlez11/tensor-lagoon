@@ -2,11 +2,10 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { BlogService, BlogPost } from '../../../../services/blog';
-import { Hero } from '../../../blog/hero/hero';
 
 @Component({
     selector: 'app-post-detail',
-    imports: [CommonModule, RouterLink, Hero],
+    imports: [CommonModule, RouterLink],
     templateUrl: './post-detail.html',
 })
 export class PostDetail implements OnInit {
@@ -24,4 +23,7 @@ export class PostDetail implements OnInit {
         }
         this.loading.set(false);
     }
+
+    // Security Note: Content is sanitized by Angular before binding to [innerHTML] in the template.
+    // No explicit sanitization needed unless bypassing security (which we are not).
 }

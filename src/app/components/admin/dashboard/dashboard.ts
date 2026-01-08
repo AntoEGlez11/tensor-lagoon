@@ -5,6 +5,7 @@ import { CrmService, ServiceTicket, UserProfile } from '../../../services/crm';
 import { ToastService } from '../../../services/toast';
 import { Unsubscribe } from '@angular/fire/firestore';
 import { AppointmentService, Appointment } from '../../../services/appointment';
+import { AuthService } from '../../../services/auth';
 import { VEHICLE_BRANDS, VEHICLE_YEARS, VEHICLE_COLORS } from '../../../data/vehicles';
 
 // Custom Validator
@@ -29,6 +30,9 @@ export class Dashboard implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private toast = inject(ToastService);
   private appointmentService = inject(AppointmentService);
+  private auth = inject(AuthService);
+
+  profile = this.auth.userProfile;
 
   services = signal<ServiceTicket[]>([]);
   pendingAppointments = signal<Appointment[]>([]);
@@ -130,6 +134,15 @@ export class Dashboard implements OnInit, OnDestroy {
   rejectionAppt = signal<Appointment | null>(null);
   rejectionReasonControl = this.fb.control('', Validators.required);
   rejectionOptions = ['Horario no disponible', 'Problema con vehículo', 'Falta de personal', 'Otro'];
+
+  statusLabels: Record<string, string> = {
+    'pending': 'Pendiente',
+    'in-progress': 'En Proceso',
+    'ready': 'Listo',
+    'completed': 'Completado',
+    'confirmed': 'Confirmado',
+    'rejected': 'Rechazado'
+  };
 
   async confirmAppointment(appt: Appointment) {
     if (!appt.id) return;
