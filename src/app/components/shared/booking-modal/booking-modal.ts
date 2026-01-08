@@ -7,7 +7,10 @@ import { CalendarComponent } from '../calendar/calendar';
 import { Timestamp, deleteField } from '@angular/fire/firestore';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { VEHICLE_BRANDS, VEHICLE_YEARS, VEHICLE_COLORS } from '../../../data/vehicles';
+import { CAR_BRANDS, MOTO_BRANDS, TRUCK_BRANDS, VEHICLE_YEARS, VEHICLE_COLORS } from '../../../data/vehicles';
+
+// Helper to merge brands for the simple dropdown
+const ALL_BRANDS: Record<string, string[]> = { ...CAR_BRANDS, ...MOTO_BRANDS, ...TRUCK_BRANDS };
 
 type BookingStep = 'service' | 'date' | 'details' | 'confirmation';
 
@@ -197,7 +200,7 @@ export class BookingModalComponent {
     }
 
     // Vehicle Data
-    vehicleBrands = Object.keys(VEHICLE_BRANDS);
+    vehicleBrands = Object.keys(ALL_BRANDS).sort();
     vehicleModels = signal<string[]>([]);
     vehicleYears = VEHICLE_YEARS;
     vehicleColors = VEHICLE_COLORS;
@@ -208,8 +211,8 @@ export class BookingModalComponent {
     vehicleColor = '';
 
     onBrandChange() {
-        if (this.vehicleBrand && VEHICLE_BRANDS[this.vehicleBrand]) {
-            this.vehicleModels.set(VEHICLE_BRANDS[this.vehicleBrand]);
+        if (this.vehicleBrand && ALL_BRANDS[this.vehicleBrand]) {
+            this.vehicleModels.set(ALL_BRANDS[this.vehicleBrand]);
             this.vehicleModel = ''; // Reset model on brand change
         } else {
             this.vehicleModels.set([]);

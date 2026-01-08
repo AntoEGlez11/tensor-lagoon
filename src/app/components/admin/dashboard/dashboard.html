@@ -1,24 +1,24 @@
 <div>
-    <header class="mb-8 flex justify-between items-center">
+    <header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-            <h1 class="text-3xl font-black italic tracking-tighter text-white mb-2">
+            <h1 class="text-2xl md:text-3xl font-black italic tracking-tighter text-white mb-2">
                 ¡Hola, {{ profile()?.displayName || 'Admin' }}!</h1>
-            <p class="text-gray-400">Aquí está lo que está pasando en su negocio hoy.</p>
+            <p class="text-gray-400 text-sm md:text-base">Aquí está lo que está pasando en su negocio hoy.</p>
         </div>
-        <div class="flex gap-2">
+        <div class="flex gap-2 w-full md:w-auto">
             <button (click)="fixUserData()"
-                class="bg-gray-800 hover:bg-gray-700 text-gray-300 px-4 py-2 rounded-lg font-bold text-xs transition-colors border border-white/5">
-                🛠️ Reparar Datos
+                class="flex-1 md:flex-none bg-gray-800 hover:bg-gray-700 text-gray-300 px-4 py-2 rounded-lg font-bold text-xs transition-colors border border-white/5">
+                🛠️ Reparar
             </button>
             <button (click)="showCreateForm.set(!showCreateForm())"
-                class="bg-auto-accent hover:bg-red-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors">
-                {{ showCreateForm() ? 'Cancelar' : '+ Nuevo Servicio' }}
+                class="flex-1 md:flex-none bg-auto-accent hover:bg-red-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors text-center">
+                {{ showCreateForm() ? 'Cancelar' : '+ Servicio' }}
             </button>
         </div>
     </header>
 
     <!-- Stats Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-fade-in">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8 animate-fade-in">
         <div class="bg-auto-carbon border border-white/10 rounded-xl p-6">
             <h3 class="text-gray-400 text-sm mb-1">Ingresos Totales</h3>
             <p class="text-3xl font-bold text-green-500">${{ totalRevenue() | number }} MXN</p>
@@ -92,13 +92,32 @@
             </div>
 
             <div class="space-y-1">
+                <label class="text-xs text-gray-500 block">Tipo de Vehículo</label>
+                <div class="flex gap-4 mb-2">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" formControlName="vehicleType" value="car"
+                            class="text-auto-accent focus:ring-auto-accent">
+                        <span class="text-white text-sm">Automóvil</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" formControlName="vehicleType" value="moto"
+                            class="text-auto-accent focus:ring-auto-accent">
+                        <span class="text-white text-sm">Motocicleta</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" formControlName="vehicleType" value="truck"
+                            class="text-auto-accent focus:ring-auto-accent">
+                        <span class="text-white text-sm">Tractocamión</span>
+                    </label>
+                </div>
+
                 <label class="text-xs text-gray-500 block">Vehículo</label>
                 <div class="grid grid-cols-2 gap-2">
                     <!-- Brand -->
                     <select formControlName="vehicleBrand"
                         class="col-span-2 w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white">
                         <option value="" disabled selected>Marca</option>
-                        @for (brand of vehicleBrands; track brand) {
+                        @for (brand of vehicleBrands(); track brand) {
                         <option [value]="brand">{{ brand }}</option>
                         }
                     </select>

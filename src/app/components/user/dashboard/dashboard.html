@@ -1,11 +1,12 @@
 <div class="min-h-screen bg-auto-black pt-20 pb-12">
     <div class="container mx-auto px-4">
         <!-- Header & Profile -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 mb-12">
             <!-- Welcome -->
             <div class="lg:col-span-2">
                 <div class="mb-2">
-                    <h1 class="text-3xl font-bold text-white">Mi <span class="text-auto-accent">Garage</span></h1>
+                    <h1 class="text-2xl md:text-3xl font-bold text-white">Mi <span
+                            class="text-auto-accent">Garage</span></h1>
                 </div>
 
                 <!-- User Info Badge -->
@@ -111,12 +112,35 @@
 
                         <div class="pt-2 border-t border-white/5 mt-2">
                             <label class="text-xs text-auto-accent block mb-2 font-bold">Detalles del Vehículo</label>
+
+                            <!-- Vehicle Type -->
+                            <div class="mb-3">
+                                <label class="block text-xs text-gray-500 mb-1">Tipo</label>
+                                <div class="flex gap-4">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" formControlName="vehicleType" value="car"
+                                            class="text-auto-accent focus:ring-auto-accent">
+                                        <span class="text-white text-sm">Automóvil</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" formControlName="vehicleType" value="moto"
+                                            class="text-auto-accent focus:ring-auto-accent">
+                                        <span class="text-white text-sm">Motocicleta</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" formControlName="vehicleType" value="truck"
+                                            class="text-auto-accent focus:ring-auto-accent">
+                                        <span class="text-white text-sm">Tractocamión</span>
+                                    </label>
+                                </div>
+                            </div>
+
                             <div class="grid grid-cols-2 gap-2">
                                 <!-- Brand -->
                                 <select formControlName="vehicleBrand"
                                     class="col-span-2 w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-white text-sm focus:border-auto-accent outline-none appearance-none">
                                     <option value="" disabled selected>Selecciona Marca</option>
-                                    @for (brand of vehicleBrands; track brand) {
+                                    @for (brand of vehicleBrands(); track brand) {
                                     <option [value]="brand">{{ brand }}</option>
                                     }
                                 </select>
@@ -315,7 +339,7 @@
 
         <!-- History -->
         <div>
-            <h2 class="text-xl font-bold text-white mb-6 flex items-center">
+            <h2 class="text-lg md:text-xl font-bold text-white mb-6 flex items-center">
                 <span class="w-2 h-8 bg-gray-600 mr-3 rounded-full"></span>
                 Historial de Servicios
             </h2>

@@ -6,7 +6,7 @@ import { ToastService } from '../../../services/toast';
 import { Unsubscribe } from '@angular/fire/firestore';
 import { AppointmentService, Appointment } from '../../../services/appointment';
 import { AuthService } from '../../../services/auth';
-import { VEHICLE_BRANDS, VEHICLE_YEARS, VEHICLE_COLORS } from '../../../data/vehicles';
+import { CAR_BRANDS, MOTO_BRANDS, TRUCK_BRANDS, VEHICLE_YEARS, VEHICLE_COLORS } from '../../../data/vehicles';
 
 // Custom Validator
 function nonRepetitiveValidator(control: AbstractControl): ValidationErrors | null {
@@ -20,6 +20,7 @@ function nonRepetitiveValidator(control: AbstractControl): ValidationErrors | nu
 
 @Component({
   selector: 'app-dashboard',
+  standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
@@ -79,6 +80,7 @@ export class Dashboard implements OnInit, OnDestroy {
   createForm = this.fb.nonNullable.group({
     customerSearch: ['', Validators.required],
     // Structured Vehicle Fields
+    vehicleType: ['car', Validators.required], // New Control
     vehicleBrand: ['', Validators.required],
     vehicleModel: ['', Validators.required],
     vehicleYear: ['', Validators.required],
@@ -90,25 +92,45 @@ export class Dashboard implements OnInit, OnDestroy {
   });
 
   // Vehicle Constants
-  vehicleBrands = Object.keys(VEHICLE_BRANDS);
+  vehicleBrands = signal<string[]>([]);
   vehicleModels = signal<string[]>([]);
   vehicleYears = VEHICLE_YEARS;
   vehicleColors = VEHICLE_COLORS;
 
   constructor() {
+    // Initial Load
+    this.updateBrandList('car');
+
+    // Watch for type changes
+    this.createForm.get('vehicleType')?.valueChanges.subscribe(type => {
+      this.updateBrandList(type as 'car' | 'moto' | 'truck');
+      this.createForm.patchValue({ vehicleBrand: '', vehicleModel: '' });
+    });
+
     // Watch for brand changes
     this.createForm.get('vehicleBrand')?.valueChanges.subscribe(brand => {
-      if (brand && VEHICLE_BRANDS[brand]) {
-        this.vehicleModels.set(VEHICLE_BRANDS[brand]);
-        // Reset model if invalid
-        const current = this.createForm.get('vehicleModel')?.value || '';
-        if (!VEHICLE_BRANDS[brand].includes(current)) {
-          this.createForm.patchValue({ vehicleModel: '' });
-        }
+      const type = this.createForm.get('vehicleType')?.value as 'car' | 'moto' | 'truck';
+      let source = CAR_BRANDS;
+      if (type === 'moto') source = MOTO_BRANDS;
+      if (type === 'truck') source = TRUCK_BRANDS;
+
+      if (brand && source[brand]) {
+        this.vehicleModels.set(source[brand]);
+        // Reset model
+        this.createForm.patchValue({ vehicleModel: '' });
       } else {
         this.vehicleModels.set([]);
       }
     });
+  }
+
+  updateBrandList(type: 'car' | 'moto' | 'truck') {
+    let brands: string[] = [];
+    if (type === 'moto') brands = Object.keys(MOTO_BRANDS);
+    else if (type === 'truck') brands = Object.keys(TRUCK_BRANDS);
+    else brands = Object.keys(CAR_BRANDS);
+
+    this.vehicleBrands.set(brands.sort());
   }
 
   ngOnInit() {
