@@ -1,12 +1,17 @@
 import { Component, inject, signal, computed, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CrmService, ServiceTicket, UserProfile } from '../../../services/crm';
 import { ToastService } from '../../../services/toast';
 import { Unsubscribe } from '@angular/fire/firestore';
 import { AppointmentService, Appointment } from '../../../services/appointment';
 import { AuthService } from '../../../services/auth';
 import { CAR_BRANDS, MOTO_BRANDS, TRUCK_BRANDS, VEHICLE_YEARS, VEHICLE_COLORS } from '../../../data/vehicles';
+
+// Regex Patterns
+const NAME_PATTERN = /^[a-zA-ZÀ-ÿ\u00f1\u00d1\s]{2,50}$/;
+const EMAIL_PATTERN = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+const PLATE_PATTERN = /^[A-Z0-9-]{6,12}$/;
 
 // Custom Validator
 function nonRepetitiveValidator(control: AbstractControl): ValidationErrors | null {
@@ -18,10 +23,12 @@ function nonRepetitiveValidator(control: AbstractControl): ValidationErrors | nu
   return null;
 }
 
+import { OnlyNumbersDirective, OnlyLettersDirective, UppercaseDirective } from '../../../directives/input-restrictions';
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, UppercaseDirective, OnlyNumbersDirective, OnlyLettersDirective],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -70,8 +77,8 @@ export class Dashboard implements OnInit, OnDestroy {
   // Customer Form (Modal)
   customerForm = this.fb.nonNullable.group({
     phone: ['', [Validators.required, Validators.pattern('^[0-9]{10}$'), nonRepetitiveValidator]],
-    name: ['', Validators.required],
-    email: ['', Validators.email]
+    name: ['', [Validators.required, Validators.pattern(NAME_PATTERN)]],
+    email: ['', [Validators.email, Validators.pattern(EMAIL_PATTERN)]]
   });
 
   private unsub?: Unsubscribe;
@@ -86,7 +93,7 @@ export class Dashboard implements OnInit, OnDestroy {
     vehicleYear: ['', Validators.required],
     vehicleColor: ['', Validators.required],
 
-    licensePlate: ['', Validators.required],
+    licensePlate: ['', [Validators.required, Validators.pattern(PLATE_PATTERN)]],
     package: ['Basic Wash', Validators.required],
     price: [25, [Validators.required, Validators.min(0)]]
   });
@@ -133,11 +140,41 @@ export class Dashboard implements OnInit, OnDestroy {
     this.vehicleBrands.set(brands.sort());
   }
 
+  // Inventory State
+  inventoryProducts = signal<any[]>([]);
+  lowStockItems = computed(() =>
+    this.inventoryProducts().filter(p => p.stock <= p.minStock)
+  );
+
+  // Raffle State
+  activeRaffle = signal<any | null>(null);
+  raffleEntries = signal<any[]>([]);
+  raffleStats = computed(() => ({
+    total: this.raffleEntries().length,
+    pending: this.raffleEntries().filter(e => e.status === 'pending_payment').length
+  }));
+
   ngOnInit() {
+    // Services
     this.unsub = this.crm.getAllServices((data) => {
       this.services.set(data);
     });
     this.loadPendingAppointments();
+
+    // Inventory
+    this.crm.getInventory((data) => {
+      this.inventoryProducts.set(data);
+    });
+
+    // Active Raffle & Stats
+    this.crm.getActiveRaffle((raffle) => {
+      this.activeRaffle.set(raffle);
+      if (raffle) {
+        this.crm.getRaffleEntries(raffle.id, (entries) => {
+          this.raffleEntries.set(entries);
+        });
+      }
+    });
   }
 
   ngOnDestroy() {
@@ -322,6 +359,30 @@ export class Dashboard implements OnInit, OnDestroy {
 
   async updateStatus(id: string, status: ServiceTicket['status']) {
     await this.crm.updateStatus(id, status);
+  }
+
+  notifyAppointment(appt: any) {
+    if (!appt.customerDetails?.phone) return;
+
+    // Format date text
+    const date = appt.start.toDate().toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
+    const time = appt.start.toDate().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+
+    const text = `Hola ${appt.customerDetails.name}, te saludamos de Estrada Confort & Detallado.\n\nConfirmamos tu cita para *${appt.serviceName}* el día *${date}* a las *${time}*.\n\n¡Te esperamos!`;
+
+    const cleanPhone = appt.customerDetails.phone.replace(/\D/g, '');
+    const url = `https://web.whatsapp.com/send?phone=52${cleanPhone}&text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  }
+
+  notifyServiceReady(ticket: ServiceTicket) {
+    if (!ticket.customerPhone) return;
+
+    const text = `Hola ${ticket.customerName}, buenas noticias.\n\nTu vehículo *${ticket.vehicle}* (${ticket.licensePlate || 'Sin placas'}) ya está *LISTO*.\n\nPuedes pasar a recogerlo cuando gustes.\nTotal a pagar: $${ticket.price || 0}`;
+
+    const cleanPhone = ticket.customerPhone.replace(/\D/g, '');
+    const url = `https://web.whatsapp.com/send?phone=52${cleanPhone}&text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
   }
 
   // --- Migration Tool ---

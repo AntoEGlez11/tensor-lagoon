@@ -1,5 +1,8 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { Firestore, collection, addDoc, query, where, getDocs, updateDoc, doc, setDoc, orderBy, onSnapshot, Unsubscribe, deleteDoc, writeBatch } from '@angular/fire/firestore';
+import {
+    Firestore, collection, addDoc, collectionData, doc, updateDoc,
+    query, where, orderBy, deleteDoc, setDoc, onSnapshot, Unsubscribe, limit, getDocs, writeBatch, serverTimestamp
+} from '@angular/fire/firestore';
 
 export interface ServiceOffering {
     id?: string;
@@ -46,6 +49,22 @@ export interface UserProfile {
     createdAt?: any;
 }
 
+export interface ContactMessage {
+    id?: string;
+    name: string;
+    email: string;
+    phone?: string;
+    message: string;
+    vehicle?: {
+        brand: string;
+        model: string;
+        year: string;
+        color: string;
+    } | null;
+    status: 'new' | 'read' | 'archived';
+    createdAt?: any;
+}
+
 export interface UserVehicle {
     id?: string;
     type: 'car' | 'moto' | 'truck';
@@ -57,13 +76,47 @@ export interface UserVehicle {
     createdAt?: any;
 }
 
+export interface InventoryProduct {
+    id?: string;
+    name: string;
+    category: string;
+    stock: number;
+    unit: string; // e.g., 'liters', 'pieces'
+    minStock: number; // Threshold for low stock alert
+    updatedAt?: any;
+}
+
 @Injectable({
     providedIn: 'root'
 })
 export class CrmService {
     private firestore = inject(Firestore);
     private servicesCollection = collection(this.firestore, 'services');
-    // ... (rest of class)
+
+    constructor() {
+        this.checkAndSeedRaffle();
+        this.seedSpanishServices();
+    }
+
+    async checkAndSeedRaffle() {
+        // Check if there is any ACTIVE raffle
+        const ref = collection(this.firestore, 'raffles');
+        const q = query(ref, where('status', '==', 'active'), limit(1));
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+            console.log('No active raffle found. Seeding default...');
+            await this.createRaffle({
+                title: '¡Gran Sorteo de Apertura!',
+                description: 'Gana un Servicio Premium Completo. Regístrate hoy y obtén tu folio de participación al confirmar tu primer servicio.',
+                price: 50,
+                startDate: new Date().toISOString().split('T')[0], // Today
+                endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0], // Next Month
+                status: 'active', // Important
+                createdAt: serverTimestamp()
+            });
+        }
+    }
 
     // Create a new service ticket
     async createService(ticket: Omit<ServiceTicket, 'id' | 'createdAt'>) {
@@ -196,6 +249,8 @@ export class CrmService {
         const ref = doc(this.firestore, `users/${uid}/vehicles`, vehicleId);
         await deleteDoc(ref);
     }
+
+
 
     // Lookup user by Phone or Name (Simple client-side filter for now as Firestore fuzzy search is limited)
     // In production with many users, this should use a proper index or Algolia
@@ -391,5 +446,217 @@ export class CrmService {
             await batch.commit();
         }
         return updatedCount;
+    }
+
+
+
+    // --- Raffle Management (Admin) ---
+
+    getRaffles(callback: (raffles: any[]) => void): Unsubscribe {
+        const ref = collection(this.firestore, 'raffles');
+        // Order by startDate desc
+        const q = query(ref, orderBy('startDate', 'desc'));
+
+        return onSnapshot(q, (snapshot) => {
+            const list = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            callback(list);
+        });
+    }
+
+    async createRaffle(data: any) {
+        const ref = collection(this.firestore, 'raffles');
+        await addDoc(ref, {
+            ...data,
+            createdAt: serverTimestamp()
+        });
+    }
+
+    async updateRaffle(id: string, data: any) {
+        const ref = doc(this.firestore, 'raffles', id);
+        await updateDoc(ref, data);
+    }
+
+    async deleteRaffle(id: string) {
+        const ref = doc(this.firestore, 'raffles', id);
+        await deleteDoc(ref);
+    }
+
+    // --- Raffle Participants ---
+
+    getRaffleEntries(raffleId: string, callback: (entries: any[]) => void): Unsubscribe {
+        const ref = collection(this.firestore, 'giveaway_entries');
+        // Filter by specific raffle
+        // Note: You might need to add an index in Firestore for this query
+        const q = query(ref, where('raffleId', '==', raffleId), orderBy('createdAt', 'desc'));
+
+        return onSnapshot(q, (snapshot) => {
+            const list = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            callback(list);
+        });
+    }
+
+    async verifyRaffleEntry(entryId: string, isVerified: boolean) {
+        const ref = doc(this.firestore, 'giveaway_entries', entryId);
+        await updateDoc(ref, {
+            status: isVerified ? 'verified' : 'pending_payment',
+            verifiedAt: isVerified ? serverTimestamp() : null
+        });
+    }
+
+    // --- User Side Dynamic Raffle ---
+
+    // Get the currently active raffle (Single)
+    getActiveRaffle(callback: (raffle: any | null) => void): Unsubscribe {
+        const ref = collection(this.firestore, 'raffles');
+        const q = query(ref, where('status', '==', 'active'), limit(1));
+
+        return onSnapshot(q, (snapshot) => {
+            if (snapshot.empty) {
+                callback(null);
+            } else {
+                const doc = snapshot.docs[0];
+                callback({ id: doc.id, ...doc.data() });
+            }
+        });
+    }
+
+    // Get a user's entry for a SPECIFIC raffle
+    getUserEntryForRaffle(uid: string, raffleId: string, callback: (entry: any) => void): Unsubscribe {
+        const ref = collection(this.firestore, 'giveaway_entries');
+        const q = query(ref, where('uid', '==', uid), where('raffleId', '==', raffleId), limit(1));
+
+        return onSnapshot(q, (snapshot) => {
+            if (!snapshot.empty) {
+                const doc = snapshot.docs[0];
+                callback({ id: doc.id, ...doc.data() });
+            } else {
+                callback(null);
+            }
+        });
+    }
+
+    // Override generic createRaffleEntry to include raffleId
+    async joinRaffle(uid: string, name: string, vehicleInfo: string, raffleId: string, ticketRef?: string): Promise<string> {
+        const refId = ticketRef || `REF-${uid.slice(-4)}-${Math.floor(100 + Math.random() * 900)}`;
+
+        const entry: any = {
+            uid,
+            userName: name,
+            vehicleInfo,
+            raffleId, // Link to specific raffle
+            ticketRef: refId.toUpperCase(),
+            status: 'pending_payment',
+            createdAt: serverTimestamp(),
+            verifiedAt: null
+        };
+
+        const ref = collection(this.firestore, 'giveaway_entries');
+        await addDoc(ref, entry);
+        return refId.toUpperCase();
+    }
+
+    // --- Inventory Management (Admin) ---
+
+    getInventory(callback: (products: InventoryProduct[]) => void): Unsubscribe {
+        const ref = collection(this.firestore, 'inventory_products');
+        // const q = query(ref, orderBy('name', 'asc')); 
+        // TEMPORARY DEBUG: Remove orderBy to rule out index issues
+        const q = query(ref);
+
+        return onSnapshot(q, (snapshot) => {
+            const list = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            } as InventoryProduct));
+            callback(list);
+        }, (error) => {
+            console.error('Inventory Error:', error);
+            // We could call a secondary callback for errors if we changed the signature,
+            // but for now logging it prevents the unhandled crash and allows debugging.
+            this.logSystemError('getInventory', error);
+        });
+    }
+
+    async addProduct(product: Omit<InventoryProduct, 'id' | 'updatedAt'>) {
+        const ref = collection(this.firestore, 'inventory_products');
+        await addDoc(ref, {
+            ...product,
+            updatedAt: serverTimestamp()
+        });
+    }
+
+    async updateProduct(id: string, data: Partial<InventoryProduct>) {
+        const ref = doc(this.firestore, 'inventory_products', id);
+        await updateDoc(ref, {
+            ...data,
+            updatedAt: serverTimestamp()
+        });
+    }
+
+    async deleteProduct(id: string) {
+        const ref = doc(this.firestore, 'inventory_products', id);
+        await deleteDoc(ref);
+    }
+
+    // Quick Stock Adjustment
+    async adjustStock(id: string, currentStock: number, adjustment: number) {
+        const newStock = Math.max(0, currentStock + adjustment);
+        const ref = doc(this.firestore, 'inventory_products', id);
+        await updateDoc(ref, {
+            stock: newStock,
+            updatedAt: serverTimestamp()
+        });
+    }
+
+    // --- System Logging ---
+    async logSystemError(context: string, error: any, uid?: string) {
+        try {
+            const ref = collection(this.firestore, 'system_logs');
+            await addDoc(ref, {
+                context,
+                message: error?.message || error?.toString() || 'Unknown Error',
+                detail: JSON.stringify(error),
+                uid: uid || 'anonymous',
+                timestamp: serverTimestamp(),
+                status: 'new' // To be reviewed by admin
+            });
+        } catch (e) {
+            console.error('ORIGINAL ERROR:', error); // Ensure original error is seen
+            console.error('Failed to log system error explicitly', e);
+        }
+    }
+
+    // --- Contact / Inbox System ---
+
+    async saveContactMessage(msg: Omit<ContactMessage, 'id' | 'createdAt' | 'status'>) {
+        const ref = collection(this.firestore, 'messages');
+        await addDoc(ref, {
+            ...msg,
+            status: 'new',
+            createdAt: serverTimestamp()
+        });
+    }
+
+    getMessages(callback: (msgs: ContactMessage[]) => void): Unsubscribe {
+        const ref = collection(this.firestore, 'messages');
+        const q = query(ref, orderBy('createdAt', 'desc'));
+        return onSnapshot(q, (snapshot) => {
+            const list = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            } as ContactMessage));
+            callback(list);
+        });
+    }
+
+    async updateMessageStatus(id: string, status: 'read' | 'archived') {
+        const ref = doc(this.firestore, 'messages', id);
+        await updateDoc(ref, { status });
     }
 }

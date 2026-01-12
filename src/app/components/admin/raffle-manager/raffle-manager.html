@@ -1,0 +1,195 @@
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+        <div>
+            <h2 class="text-2xl font-black italic text-white tracking-tighter">GESTIÓN DE <span
+                    class="text-auto-accent">SORTEOS</span></h2>
+            <p class="text-gray-400 text-sm">Administra concursos y participantes.</p>
+        </div>
+        @if (viewMode() === 'list') {
+        <button (click)="goToCreate()"
+            class="bg-auto-accent hover:bg-red-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors flex items-center gap-2">
+            <span>+</span> Crear Sorteo
+        </button>
+        } @else {
+        <button (click)="goToList()" class="text-gray-400 hover:text-white font-bold text-sm flex items-center gap-2">
+            <span>←</span> Volver
+        </button>
+        }
+    </div>
+
+    <!-- LIST VIEW -->
+    @if (viewMode() === 'list') {
+    <div class="grid gap-4">
+        @for (raffle of raffles(); track raffle.id) {
+        <div
+            class="bg-[#1a1a1a] border border-white/5 p-6 rounded-xl flex justify-between items-center group hover:border-auto-accent/30 transition-colors">
+            <div>
+                <div class="flex items-center gap-3 mb-1">
+                    <h3 class="text-xl font-bold text-white">{{ raffle.title }}</h3>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider"
+                        [ngClass]="raffle.status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'">
+                        {{ raffle.status === 'active' ? 'ACTIVO' : 'INACTIVO' }}
+                    </span>
+                </div>
+                <p class="text-gray-400 text-sm">Del {{ raffle.startDate | date }} al {{ raffle.endDate | date }}</p>
+                <p class="text-gray-500 text-xs mt-1">Premio: {{ raffle.prize }}</p>
+            </div>
+            <div class="flex gap-3">
+                <button (click)="viewParticipants(raffle.id)"
+                    class="bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-3 py-1.5 rounded text-xs font-bold transition-colors">
+                    Participantes
+                </button>
+                <button (click)="editRaffle(raffle)"
+                    class="bg-white/5 hover:bg-white/10 text-white px-3 py-1.5 rounded text-xs font-bold transition-colors">
+                    Editar
+                </button>
+                <button (click)="deleteRaffle(raffle.id)" class="text-gray-600 hover:text-red-500 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        } @empty {
+        <div class="text-center py-12 bg-[#1a1a1a] rounded-xl border border-white/5 border-dashed">
+            <span class="text-4xl block mb-2">🎟️</span>
+            <p class="text-gray-400">No hay sorteos registrados.</p>
+        </div>
+        }
+    </div>
+    }
+
+    <!-- FORM VIEW -->
+    @if (viewMode() === 'form') {
+    <div class="bg-[#1a1a1a] border border-white/5 p-8 rounded-2xl max-w-2xl mx-auto">
+        <h3 class="text-xl font-bold text-white mb-6">{{ selectedRaffleId() ? 'Editar' : 'Nuevo' }} Sorteo</h3>
+        <form [formGroup]="raffleForm" (ngSubmit)="saveRaffle()" class="space-y-6">
+
+            <div>
+                <label class="block text-gray-400 text-xs font-bold uppercase mb-2">Título</label>
+                <input formControlName="title" type="text"
+                    class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-auto-accent outline-none transition-colors"
+                    placeholder="Ej. Gran Sorteo Mustang 2024">
+            </div>
+
+            <div class="grid grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-gray-400 text-xs font-bold uppercase mb-2">Costo Boleto</label>
+                    <input formControlName="price" type="number"
+                        class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-auto-accent outline-none transition-colors">
+                </div>
+                <div>
+                    <label class="block text-gray-400 text-xs font-bold uppercase mb-2">Estatus</label>
+                    <select formControlName="status"
+                        class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-auto-accent outline-none transition-colors">
+                        <option value="inactive">Inactivo (Borrador)</option>
+                        <option value="active">Activo (Publicado)</option>
+                        <option value="ended">Finalizado</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-gray-400 text-xs font-bold uppercase mb-2">Inicio</label>
+                    <input formControlName="startDate" type="date"
+                        [class.border-red-500]="raffleForm.errors?.['invalidRange'] || (raffleForm.get('startDate')?.invalid && raffleForm.get('startDate')?.touched)"
+                        class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-auto-accent outline-none transition-colors">
+                </div>
+                <div>
+                    <label class="block text-gray-400 text-xs font-bold uppercase mb-2">Fin</label>
+                    <input formControlName="endDate" type="date"
+                        [class.border-red-500]="raffleForm.errors?.['invalidRange'] || (raffleForm.get('endDate')?.invalid && raffleForm.get('endDate')?.touched)"
+                        class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-auto-accent outline-none transition-colors">
+                </div>
+            </div>
+            @if (raffleForm.errors?.['invalidRange']) {
+            <div class="text-red-500 text-xs font-bold text-center -mt-4">
+                La fecha de fin no puede ser anterior a la de inicio.
+            </div>
+            }
+
+            <div>
+                <label class="block text-gray-400 text-xs font-bold uppercase mb-2">Descripción Corta</label>
+                <textarea formControlName="description" rows="2"
+                    class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-auto-accent outline-none transition-colors"
+                    placeholder="Breve resumen para el banner"></textarea>
+            </div>
+
+            <div>
+                <label class="block text-gray-400 text-xs font-bold uppercase mb-2">Términos y Condiciones
+                    (Detallado)</label>
+                <textarea formControlName="terms" rows="6"
+                    class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-auto-accent outline-none transition-colors font-mono text-sm"
+                    placeholder="Reglas completas, condiciones de participación, fecha de sorteo, etc."></textarea>
+            </div>
+
+            <div class="pt-4 flex justify-end gap-3">
+                <button type="button" (click)="goToList()"
+                    class="px-6 py-2 text-gray-400 font-bold hover:text-white transition-colors">Cancelar</button>
+                <button type="submit" [disabled]="raffleForm.invalid"
+                    class="bg-auto-accent hover:bg-red-600 text-white px-8 py-2 rounded-lg font-bold transition-colors disabled:opacity-50">Guardar</button>
+            </div>
+        </form>
+    </div>
+    }
+
+    <!-- PARTICIPANTS VIEW -->
+    @if (viewMode() === 'participants') {
+    <div class="bg-[#1a1a1a] border border-white/10 rounded-2xl overflow-hidden">
+        <div class="p-6 border-b border-white/5 flex justify-between items-center">
+            <h3 class="font-bold text-white">Participantes Registrados</h3>
+            <div class="text-sm text-gray-400">Total: {{ participants().length }}</div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead class="bg-white/5 text-gray-400 uppercase font-bold text-xs">
+                    <tr>
+                        <th class="px-6 py-4">Folio</th>
+                        <th class="px-6 py-4">Usuario</th>
+                        <th class="px-6 py-4">Vehículo</th>
+                        <th class="px-6 py-4">Fecha</th>
+                        <th class="px-6 py-4">Estatus</th>
+                        <th class="px-6 py-4 text-right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5 text-gray-300">
+                    @for (entry of participants(); track entry.id) {
+                    <tr class="hover:bg-white/[0.02] transition-colors">
+                        <td class="px-6 py-4 font-mono text-white">{{ entry.ticketRef }}</td>
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-white">{{ entry.userName }}</div>
+                            <div class="text-xs text-gray-500">ID: {{ entry.uid.slice(0,6) }}...</div>
+                        </td>
+                        <td class="px-6 py-4">{{ entry.vehicleInfo || 'N/A' }}</td>
+                        <td class="px-6 py-4 text-gray-500">{{ entry.createdAt?.seconds * 1000 | date:'short' }}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-2 py-1 rounded text-xs font-bold uppercase"
+                                [ngClass]="entry.status === 'verified' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-500'">
+                                {{ entry.status === 'verified' ? 'Pagado' : 'Pendiente' }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <button (click)="toggleParticipantStatus(entry)" class="text-xs font-bold hover:underline"
+                                [class.text-green-400]="entry.status !== 'verified'"
+                                [class.text-red-400]="entry.status === 'verified'">
+                                {{ entry.status === 'verified' ? 'Revocar' : 'Confirmar Pago' }}
+                            </button>
+                        </td>
+                    </tr>
+                    } @empty {
+                    <tr>
+                        <td colspan="6" class="px-6 py-12 text-center text-gray-500 italic">No hay participantes aún.
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    }
+</div>

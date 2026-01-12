@@ -17,6 +17,9 @@ export class Home implements OnInit, OnDestroy {
 
     featuredServices = signal<ServiceOffering[]>([]);
     testimonials = signal<Testimonial[]>([]);
+    activeRaffle = signal<any | null>(null);
+
+    private unsubRaffle?: Unsubscribe;
 
     ngOnInit() {
         this.unsub = this.crm.getServiceOfferings((data) => {
@@ -30,11 +33,19 @@ export class Home implements OnInit, OnDestroy {
         this.unsubTestimonials = this.crm.getTestimonials((data) => {
             this.testimonials.set(data);
         });
+
+        this.unsubRaffle = this.crm.getActiveRaffle((raffle) => {
+            this.activeRaffle.set(raffle);
+        });
+
+        // Force check for seeding
+        this.crm.checkAndSeedRaffle();
     }
 
     ngOnDestroy() {
         if (this.unsub) this.unsub();
         if (this.unsubTestimonials) this.unsubTestimonials();
+        if (this.unsubRaffle) this.unsubRaffle();
     }
 }
 

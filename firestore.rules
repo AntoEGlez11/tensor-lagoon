@@ -79,5 +79,37 @@ service cloud.firestore {
                     (isAuthenticated() && resource.data.userId == request.auth.uid && 
                      (request.resource.data.status == 'pending' || request.resource.data.status == 'cancelled'));
     }
+    // Raffles (New)
+    match /raffles/{raffleId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Giveaway Entries (New)
+    match /giveaway_entries/{entryId} {
+      // Admins read all, Users read own
+      allow read: if isAdmin() || (isAuthenticated() && resource.data.uid == request.auth.uid);
+      // Users can join
+      allow create: if isAuthenticated() && request.resource.data.uid == request.auth.uid;
+      // Only admins can verify (update status)
+      allow update: if isAdmin(); 
+    }
+
+    // System Logs
+    match /system_logs/{logId} {
+      allow create: if true; // Allow app to report errors
+      allow read, write: if isAdmin();
+    }
+
+    // Inventory Products
+    match /inventory_products/{productId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Contact Messages
+    match /messages/{msgId} {
+      allow create: if true; // Public can write
+      allow read, write: if isAdmin(); // Only admin reads/edits
+    }
   }
 }

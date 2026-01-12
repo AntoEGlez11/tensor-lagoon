@@ -57,17 +57,149 @@
             <!-- Contact Form -->
             <div class="bg-auto-carbon border border-white/5 p-8 rounded-2xl">
                 <h3 class="text-2xl font-bold text-white mb-6">Enviar Mensaje</h3>
-                <form class="space-y-4">
-                    <input type="text" placeholder="Tu Nombre"
-                        class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-auto-accent transition-colors">
-                    <input type="email" placeholder="Tu Correo"
-                        class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-auto-accent transition-colors">
-                    <textarea rows="4" placeholder="Tu Mensaje"
-                        class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-auto-accent transition-colors"></textarea>
-                    <button type="button"
-                        class="w-full bg-auto-accent hover:bg-red-600 text-white font-bold py-3 rounded-lg transition-colors">
-                        Enviar
-                    </button>
+                <form [formGroup]="contactForm" (ngSubmit)="onSubmit()">
+                    <div class="space-y-6">
+                        <!-- Name & Phone Row -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-gray-400 text-sm font-bold mb-2 uppercase tracking-wide">Nombre
+                                    Completo</label>
+                                <input type="text" formControlName="name" appOnlyLetters
+                                    class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-auto-accent focus:ring-1 focus:ring-auto-accent outline-none transition-all placeholder-gray-600"
+                                    placeholder="Ej. Juan Pérez">
+                            </div>
+                            <div>
+                                <label class="block text-gray-400 text-sm font-bold mb-2 uppercase tracking-wide">
+                                    Teléfono (WhatsApp)
+                                </label>
+                                <input type="tel" formControlName="phone" appOnlyNumbers maxlength="10"
+                                    [class.border-red-500]="contactForm.get('phone')?.invalid && (contactForm.get('phone')?.dirty || contactForm.get('phone')?.touched)"
+                                    class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-auto-accent focus:ring-1 focus:ring-auto-accent outline-none transition-all placeholder-gray-600"
+                                    placeholder="Ej. 8711234567">
+                                @if (contactForm.get('phone')?.invalid && (contactForm.get('phone')?.dirty ||
+                                contactForm.get('phone')?.touched)) {
+                                <div class="text-red-500 text-xs mt-1">
+                                    @if (contactForm.get('phone')?.errors?.['required']) { El teléfono es requerido. }
+                                    @if (contactForm.get('phone')?.errors?.['pattern']) { Debe ser de 10 dígitos
+                                    numéricos. }
+                                </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-400 text-sm font-bold mb-2 uppercase tracking-wide">
+                                Correo Electrónico
+                            </label>
+                            <input type="email" formControlName="email"
+                                [class.border-red-500]="contactForm.get('email')?.invalid && (contactForm.get('email')?.dirty || contactForm.get('email')?.touched)"
+                                class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-auto-accent focus:ring-1 focus:ring-auto-accent outline-none transition-all placeholder-gray-600"
+                                placeholder="tucorreo@ejemplo.com">
+                            @if (contactForm.get('email')?.invalid && (contactForm.get('email')?.dirty ||
+                            contactForm.get('email')?.touched)) {
+                            <div class="text-red-500 text-xs mt-1">
+                                Format inválido (ej. nombre@dominio.com)
+                            </div>
+                            }
+                        </div>
+
+                        <!-- Vehicle Toggle -->
+                        <div class="bg-white/5 rounded-xl p-4 border border-white/10">
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" formControlName="includeVehicle"
+                                    class="w-5 h-5 rounded text-auto-accent focus:ring-auto-accent bg-black/40 border-white/20">
+                                <span class="text-white font-bold">¿Quieres incluir datos de tu vehículo?</span>
+                            </label>
+
+                            <!-- Vehicle Form (Conditional) -->
+                            @if (contactForm.get('includeVehicle')?.value) {
+                            <div
+                                class="mt-4 pt-4 border-t border-white/10 grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
+                                <div class="col-span-1 md:col-span-2 flex gap-4 mb-2">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" formControlName="vehicleType" value="car"
+                                            class="text-auto-accent">
+                                        <span class="text-gray-300 text-sm">Auto</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" formControlName="vehicleType" value="truck"
+                                            class="text-auto-accent">
+                                        <span class="text-gray-300 text-sm">Camioneta/SUV</span>
+                                    </label>
+                                    <!-- Moto hidden unless requested, keeping simplified -->
+                                </div>
+
+                                <div class="space-y-1 w-full">
+                                    <select formControlName="vehicleBrand"
+                                        [class.border-red-500]="contactForm.get('vehicleBrand')?.invalid && contactForm.get('vehicleBrand')?.touched"
+                                        class="bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-white w-full">
+                                        <option value="" disabled selected>Marca (*)</option>
+                                        @for (brand of vehicleBrands(); track brand) {
+                                        <option [value]="brand">{{ brand }}</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="space-y-1 w-full">
+                                    <select formControlName="vehicleModel"
+                                        [class.border-red-500]="contactForm.get('vehicleModel')?.invalid && contactForm.get('vehicleModel')?.touched"
+                                        class="bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-white w-full"
+                                        [attr.disabled]="!contactForm.get('vehicleBrand')?.value ? true : null">
+                                        <option value="" disabled selected>Modelo (*)</option>
+                                        @for (model of vehicleModels(); track model) {
+                                        <option [value]="model">{{ model }}</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="space-y-1 w-full">
+                                    <select formControlName="vehicleYear"
+                                        [class.border-red-500]="contactForm.get('vehicleYear')?.invalid && contactForm.get('vehicleYear')?.touched"
+                                        class="bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-white w-full">
+                                        <option value="" disabled selected>Año (*)</option>
+                                        @for (year of vehicleYears; track year) {
+                                        <option [value]="year">{{ year }}</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="space-y-1 w-full">
+                                    <select formControlName="vehicleColor"
+                                        [class.border-red-500]="contactForm.get('vehicleColor')?.invalid && contactForm.get('vehicleColor')?.touched"
+                                        class="bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-white w-full">
+                                        <option value="" disabled selected>Color (*)</option>
+                                        @for (color of vehicleColors; track color) {
+                                        <option [value]="color">{{ color }}</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            }
+                        </div>
+
+                        <div>
+                            <label
+                                class="block text-gray-400 text-sm font-bold mb-2 uppercase tracking-wide">Mensaje</label>
+                            <textarea formControlName="message" rows="4"
+                                [class.border-red-500]="contactForm.get('message')?.invalid && (contactForm.get('message')?.dirty || contactForm.get('message')?.touched)"
+                                class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-auto-accent focus:ring-1 focus:ring-auto-accent outline-none transition-all placeholder-gray-600"
+                                placeholder="¿En qué podemos ayudarte?"></textarea>
+                            @if (contactForm.get('message')?.hasError('minlength') && (contactForm.get('message')?.dirty
+                            || contactForm.get('message')?.touched)) {
+                            <div class="text-red-500 text-xs mt-1">El mensaje es muy corto (mínimo 4 letras).</div>
+                            }
+                        </div>
+                        <div class="pt-4">
+                            <button type="submit" [disabled]="contactForm.invalid || isSubmitting()"
+                                class="w-full bg-auto-accent hover:bg-red-600 text-white font-bold py-4 rounded-lg uppercase tracking-widest transition-all hover:scale-[1.02] shadow-lg shadow-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+                                @if (isSubmitting()) {
+                                <span class="inline-block animate-spin mr-2">↻</span> Enviando...
+                                } @else {
+                                ENVIAR MENSAJE
+                                }
+                            </button>
+                        </div>
+                    </div>
                 </form>
             </div>
         </div>

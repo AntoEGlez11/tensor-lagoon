@@ -11,7 +11,7 @@ export const routes: Routes = [
     { path: 'services', loadComponent: () => import('./components/public/services/services').then(m => m.Services) },
     { path: 'contact', loadComponent: () => import('./components/public/contact/contact').then(m => m.Contact) },
     { path: 'privacy', loadComponent: () => import('./components/public/legal/privacy-policy/privacy-policy').then(m => m.PrivacyPolicy) },
-    { path: 'terms', loadComponent: () => import('./components/public/legal/terms-of-service/terms-of-service').then(m => m.TermsOfService) },
+    { path: 'terms', loadComponent: () => import('./components/public/terms/terms').then(m => m.TermsComponent) },
     {
         path: 'admin',
         canActivate: [authGuard, adminGuard], // Chain guards: Login First -> Then Check Admin
@@ -21,6 +21,9 @@ export const routes: Routes = [
             { path: 'dashboard', loadComponent: () => import('./components/admin/dashboard/dashboard').then(m => m.Dashboard) },
             { path: 'blog', loadComponent: () => import('./components/admin/blog/blog-manager').then(m => m.BlogManager) },
             { path: 'services', loadComponent: () => import('./components/admin/service-manager/service-manager').then(m => m.ServiceManager) },
+            { path: 'raffles', loadComponent: () => import('./components/admin/raffle-manager/raffle-manager').then(m => m.RaffleManager) },
+            { path: 'inventory', loadComponent: () => import('./components/admin/inventory-manager/inventory-manager').then(m => m.InventoryManager) },
+            { path: 'inbox', loadComponent: () => import('./components/admin/inbox-manager/inbox-manager').then(m => m.InboxManager) },
             { path: 'testimonials', loadComponent: () => import('./components/admin/testimonial-manager/testimonial-manager').then(m => m.TestimonialManager) },
             { path: 'users', loadComponent: () => import('./components/admin/user-manager/user-manager').then(m => m.UserManager) }
         ]

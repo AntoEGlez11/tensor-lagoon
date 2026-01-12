@@ -1,7 +1,7 @@
 export const environment = {
     production: false,
     firebase: {
-        apiKey: "AIzaSyBFpYi_ASc_ji3O-chIrggcCMRxOdrpGDE", // <--- TE FALTA ESTE DATO (Web API Key)
+        apiKey: "AIzaSyBFpYi_ASc_ji3O-chIrggcCMRxOdrpGDE",
         authDomain: "car-wash-app-6b0d2.firebaseapp.com",
         projectId: "car-wash-app-6b0d2",
         storageBucket: "car-wash-app-6b0d2.firebasestorage.app",
