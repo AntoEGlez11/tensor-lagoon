@@ -142,7 +142,13 @@
     <div class="bg-[#1a1a1a] border border-white/10 rounded-2xl overflow-hidden">
         <div class="p-6 border-b border-white/5 flex justify-between items-center">
             <h3 class="font-bold text-white">Participantes Registrados</h3>
-            <div class="text-sm text-gray-400">Total: {{ participants().length }}</div>
+            <div class="flex items-center gap-4">
+                <button (click)="pickWinner()"
+                    class="bg-auto-accent hover:bg-yellow-500 text-black px-4 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition-colors shadow-lg shadow-yellow-500/20">
+                    🏆 Elegir Ganador
+                </button>
+                <div class="text-sm text-gray-400">Total: {{ participants().length }}</div>
+            </div>
         </div>
 
         <div class="overflow-x-auto">
@@ -174,11 +180,23 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 text-right">
-                            <button (click)="toggleParticipantStatus(entry)" class="text-xs font-bold hover:underline"
-                                [class.text-green-400]="entry.status !== 'verified'"
-                                [class.text-red-400]="entry.status === 'verified'">
-                                {{ entry.status === 'verified' ? 'Revocar' : 'Confirmar Pago' }}
-                            </button>
+                            <div class="flex justify-end gap-2">
+                                <button (click)="toggleParticipantStatus(entry)"
+                                    class="text-xs font-bold px-2 py-1 rounded transition-colors"
+                                    [class.text-green-400]="entry.status !== 'verified'"
+                                    [class.text-white]="entry.status === 'verified'"
+                                    [class.bg-green-500-20]="entry.status !== 'verified'"
+                                    [class.bg-white-10]="entry.status === 'verified'">
+                                    {{ entry.status === 'verified' ? 'Deshacer' : 'Confirmar' }}
+                                </button>
+
+                                @if (entry.status !== 'rejected') {
+                                <button (click)="rejectParticipant(entry)"
+                                    class="text-xs font-bold px-2 py-1 rounded bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors">
+                                    Rechazar
+                                </button>
+                                }
+                            </div>
                         </td>
                     </tr>
                     } @empty {
@@ -193,3 +211,46 @@
     </div>
     }
 </div>
+
+<!-- WINNER CELEBRATION MODAL -->
+@if (winner()) {
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm animate-fade-in">
+    <div
+        class="md:max-w-lg w-full bg-auto-carbon border border-yellow-500/50 rounded-2xl p-8 relative shadow-[0_0_100px_rgba(234,179,8,0.2)] text-center animate-scale-up">
+
+        <button (click)="closeWinnerModal()"
+            class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+
+        <div class="mb-6 transform hover:scale-110 transition-transform duration-500 cursor-default">
+            <span class="text-6xl filter drop-shadow-[0_0_20px_rgba(234,179,8,0.5)]">🏆</span>
+        </div>
+
+        <h2 class="text-3xl font-black italic text-white tracking-tighter mb-2">¡GANADOR SELECCIONADO!</h2>
+        <p class="text-yellow-400 font-bold uppercase tracking-wider mb-8 text-sm">El sorteo ha finalizado con éxito</p>
+
+        <div class="space-y-4 mb-8 bg-black/20 rounded-xl p-6 border border-white/5">
+            <div>
+                <div class="text-xs text-gray-500 uppercase font-bold mb-1">Nombre del Ganador</div>
+                <div class="text-2xl font-bold text-white">{{ winner().userName }}</div>
+            </div>
+            <div>
+                <div class="text-xs text-gray-500 uppercase font-bold mb-1">Folio Ganador</div>
+                <div class="text-xl font-mono text-auto-accent tracking-widest">{{ winner().ticketRef }}</div>
+            </div>
+            <div>
+                <div class="text-xs text-gray-500 uppercase font-bold mb-1">Vehículo</div>
+                <div class="text-gray-300">{{ winner().vehicleInfo || 'N/A' }}</div>
+            </div>
+        </div>
+
+        <button (click)="closeWinnerModal()"
+            class="w-full bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-black font-black uppercase tracking-wider py-4 rounded-xl shadow-lg shadow-yellow-500/20 transform transition-all active:scale-95">
+            ¡Felicidades!
+        </button>
+    </div>
+</div>
+}

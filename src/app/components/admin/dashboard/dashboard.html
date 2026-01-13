@@ -29,7 +29,7 @@
                 </svg>
             </div>
             <h3 class="text-gray-400 text-sm mb-1 font-bold uppercase tracking-wider">Ingresos Totales</h3>
-            <p class="text-2xl font-black text-green-500">${{ totalRevenue() | number }} MXN</p>
+            <p class="text-2xl font-black text-green-500">{{ totalRevenue() | currency:'MXN':'symbol-narrow' }} MXN</p>
         </div>
 
         <!-- Active Services -->
@@ -50,7 +50,7 @@
         </div>
 
         <!-- Inventory Alerts -->
-        <div
+        <div (click)="router.navigate(['/admin/inventory'])"
             class="bg-auto-carbon border border-white/10 rounded-xl p-6 relative overflow-hidden group cursor-pointer hover:border-auto-accent/50 transition-colors">
             <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                 <svg class="w-16 h-16" [class.text-red-500]="lowStockItems().length > 0"
@@ -64,7 +64,7 @@
             @if (lowStockItems().length > 0) {
             <div class="flex items-baseline gap-2">
                 <p class="text-2xl font-black text-red-500 animate-pulse">{{ lowStockItems().length }}</p>
-                <span class="text-xs text-red-300">Items Bajos</span>
+                <span class="text-xs text-red-300">Prods Bajos</span>
             </div>
             <p class="text-xs text-red-400 mt-1 font-bold">¡Revisar Stock!</p>
             } @else {
@@ -98,30 +98,35 @@
         </div>
     </div>
 
-    <!-- Low Stock Alert Mini-Table (Only shows if issues exist) -->
-    @if (lowStockItems().length > 0) {
-    <div class="mb-8 bg-red-900/10 border border-red-500/30 rounded-xl p-4 animate-fade-in">
-        <h3 class="text-red-400 font-bold text-sm uppercase mb-3 flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
-                </path>
-            </svg>
-            Productos Agotándose
-        </h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-            @for (item of lowStockItems(); track item.id) {
-            <div class="bg-black/40 rounded p-2 flex justify-between items-center text-sm border border-red-500/10">
-                <span class="text-gray-300 font-medium">{{ item.name }}</span>
-                <div class="flex items-center gap-2">
-                    <span class="text-xs text-gray-500">{{ item.unit }}</span>
-                    <span class="text-red-400 font-bold bg-red-900/20 px-2 rounded">{{ item.stock }}</span>
+    <!-- Revenue Breakdown (New Section) -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 animate-fade-in">
+        <div class="bg-auto-carbon border border-white/10 rounded-xl p-6 col-span-2 lg:col-span-1">
+            <h3 class="text-white font-bold mb-4 flex items-center gap-2">
+                <span class="text-green-500">📊</span> Servicios Más Vendidos
+            </h3>
+            <div class="space-y-4">
+                @for (stat of serviceStats(); track stat.name) {
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-gray-300">{{ stat.name }}</span>
+                        <span class="text-green-400 font-mono font-bold">{{ stat.revenue |
+                            currency:'MXN':'symbol-narrow' }}</span>
+                    </div>
+                    <div class="w-full bg-white/5 rounded-full h-2 overflow-hidden">
+                        <div class="bg-gradient-to-r from-green-500 to-green-300 h-full rounded-full"
+                            [style.width.%]="(stat.revenue / totalRevenue()) * 100"></div>
+                    </div>
+                    <div class="text-[10px] text-gray-500 text-right mt-0.5">{{ stat.count }} servicios</div>
                 </div>
+                } @empty {
+                <p class="text-gray-500 text-sm">No hay servicios registrados aún.</p>
+                }
             </div>
-            }
         </div>
+        <!-- Duplicate Revenue Card Removed -->
     </div>
-    }
+
+    <!-- Low Stock Alert Mini-Table Removed (Consolidated into Summary Card) -->
 
     @if (showCreateForm()) {
     <div class="bg-auto-carbon border border-white/10 rounded-xl p-6 mb-8 animate-fade-in relative">

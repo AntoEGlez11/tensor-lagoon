@@ -33,13 +33,23 @@ export class OnlyNumbersDirective {
     standalone: true
 })
 export class OnlyLettersDirective {
+    private control = inject(NgControl, { optional: true });
+
     constructor(private el: ElementRef) { }
 
     @HostListener('input', ['$event']) onInputChange(event: InputEvent) {
-        const initialValue = this.el.nativeElement.value;
+        const input = this.el.nativeElement;
+        const initialValue = input.value;
         // Allow letters, spaces, and common accents
-        this.el.nativeElement.value = initialValue.replace(/[^a-zA-ZÀ-ÿ\u00f1\u00d1\s]*/g, '');
-        if (initialValue !== this.el.nativeElement.value) {
+        const value = initialValue.replace(/[^a-zA-ZÀ-ÿ\u00f1\u00d1\s]*/g, '');
+
+        if (initialValue !== value) {
+            input.value = value;
+
+            if (this.control && this.control.control) {
+                this.control.control.setValue(value, { emitEvent: false });
+            }
+
             event.stopPropagation();
         }
     }

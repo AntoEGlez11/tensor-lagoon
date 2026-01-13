@@ -8,6 +8,7 @@ import { Timestamp, deleteField } from '@angular/fire/firestore';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { CAR_BRANDS, MOTO_BRANDS, TRUCK_BRANDS, VEHICLE_YEARS, VEHICLE_COLORS } from '../../../data/vehicles';
+import { ToastService } from '../../../services/toast';
 
 // Helper to merge brands for the simple dropdown
 const ALL_BRANDS: Record<string, string[]> = { ...CAR_BRANDS, ...MOTO_BRANDS, ...TRUCK_BRANDS };
@@ -21,6 +22,7 @@ type BookingStep = 'service' | 'date' | 'details' | 'confirmation';
     templateUrl: './booking-modal.html'
 })
 export class BookingModalComponent {
+    // ... Inputs/Outputs ...
     @Input() serviceName: string = 'Servicio General';
     @Input() serviceId: string = 'general';
     @Input() servicePrice: string = ''; // e.g. "$250 MXN"
@@ -33,6 +35,7 @@ export class BookingModalComponent {
 
     appointmentService = inject(AppointmentService);
     authService = inject(AuthService);
+    toast = inject(ToastService);
 
     step = signal<BookingStep>('date');
     selectedDate = signal<Date | null>(null);
@@ -79,10 +82,7 @@ export class BookingModalComponent {
                             this.vehicleBrand = brand;
                             this.vehicleModel = profile.vehicleModel.replace(brand, '').trim();
                             this.onBrandChange();
-                            // If model is valid in list keep it, otherwise it might be custom or mismatch
                             if (!this.vehicleModels().includes(this.vehicleModel)) {
-                                // Maybe basic match logic or just leave it blank if strict
-                                // For MVP let's assume if it doesn't match effectively, we force re-selection
                                 this.vehicleModel = '';
                             }
                             break;
@@ -108,7 +108,7 @@ export class BookingModalComponent {
         today.setHours(0, 0, 0, 0);
 
         if (date < today) {
-            alert('Por favor selecciona una fecha futura.');
+            this.toast.show('Por favor selecciona una fecha futura.', 'info');
             return;
         }
 
@@ -136,15 +136,13 @@ export class BookingModalComponent {
 
         this.loading.set(true);
         try {
+            // ... (Logic remains same) ...
+
             const slot = this.selectedSlot()!;
             const start = Timestamp.fromDate(slot);
-
-            // Calculate end time (1 hour duration fixed for MVP)
             const endDate = new Date(slot);
             endDate.setHours(endDate.getHours() + 1);
             const end = Timestamp.fromDate(endDate);
-
-            // Construct vehicle info string
             const vehicleString = `${this.vehicleBrand} ${this.vehicleModel} ${this.vehicleYear} ${this.vehicleColor}`.trim();
 
             const details: CustomerDetails = {
@@ -157,17 +155,14 @@ export class BookingModalComponent {
             const numericPrice = Number(this.servicePrice.replace(/[^0-9.]/g, '')) || 0;
 
             if (this.isRescheduling && this.existingAppointment?.id) {
-                // Update existing appointment
                 await this.appointmentService.updateAppointment(this.existingAppointment.id, {
                     start: start,
                     end: end,
-                    status: 'pending', // Reset to pending
-                    rejectionReason: deleteField() as any, // Clear rejection reason
-                    // Optionally update details if user changed them? For now, we update them.
+                    status: 'pending',
+                    rejectionReason: deleteField() as any,
                     customerDetails: details
                 });
             } else {
-                // Create new appointment
                 await this.appointmentService.createAppointment({
                     userId: this.authService.user()?.uid || null,
                     customerDetails: details,
@@ -184,7 +179,7 @@ export class BookingModalComponent {
 
             this.step.set('confirmation');
         } catch (err) {
-            alert('Error al procesar la reserva. Por favor intenta de nuevo.');
+            this.toast.show('Error al procesar la reserva. Por favor intenta de nuevo.', 'error');
             console.error(err);
         } finally {
             this.loading.set(false);

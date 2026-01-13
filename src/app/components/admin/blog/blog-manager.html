@@ -15,36 +15,53 @@
     @if (showCreateForm()) {
     <div class="bg-auto-carbon border border-white/10 rounded-xl p-6 mb-8 animate-fade-in">
         <h2 class="text-2xl font-black italic tracking-tighter text-white mb-4">
-            {{ editingId() ? 'Editar Post' : 'Crear Nuevo Post' }}</h2>
+            {{ editingId() ? 'Editar Publicación' : 'Nueva Publicación' }}</h2>
         <form [formGroup]="createForm" (ngSubmit)="savePost()" class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="md:col-span-2">
-                <input formControlName="title" type="text" placeholder="Post Title"
-                    class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-auto-accent focus:outline-none transition-colors">
+                <label class="text-xs text-gray-400 font-bold uppercase block mb-2">Título</label>
+                <input formControlName="title" type="text" placeholder="Título del artículo"
+                    class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-auto-accent focus:outline-none transition-colors">
             </div>
 
             <div class="md:col-span-2">
-                <textarea formControlName="excerpt" rows="3" placeholder="Short Excerpt"
-                    class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-auto-accent focus:outline-none transition-colors"></textarea>
+                <label class="text-xs text-gray-400 font-bold uppercase block mb-2">Resumen (Excerpt)</label>
+                <textarea formControlName="excerpt" rows="2" placeholder="Breve descripción para la tarjeta..."
+                    class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-auto-accent focus:outline-none transition-colors"></textarea>
             </div>
 
-            <select formControlName="category"
-                class="bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-auto-accent focus:outline-none transition-colors">
-                <option value="Detailing">Detailing</option>
-                <option value="Maintenance">Maintenance</option>
-                <option value="News">Company News</option>
-                <option value="Tips">Car Care Tips</option>
-            </select>
+            <div class="md:col-span-2">
+                <label class="text-xs text-gray-400 font-bold uppercase block mb-2">Contenido Completo (HTML o
+                    Texto)</label>
+                <textarea formControlName="content" rows="6"
+                    placeholder="Escribe el contenido completo del artículo aquí..."
+                    class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-auto-accent focus:outline-none transition-colors font-mono text-sm"></textarea>
+            </div>
 
-            <input formControlName="image" type="text" placeholder="Image URL"
-                class="bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-auto-accent focus:outline-none transition-colors">
+            <div>
+                <label class="text-xs text-gray-400 font-bold uppercase block mb-2">Categoría</label>
+                <select formControlName="category"
+                    class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-auto-accent focus:outline-none transition-colors">
+                    <option value="Detailing">Detailing</option>
+                    <option value="Mantenimiento">Mantenimiento</option>
+                    <option value="Noticias">Noticias</option>
+                    <option value="Tips">Consejos</option>
+                </select>
+            </div>
 
-            <div class="md:col-span-2 flex justify-end gap-3">
-                <button type="button" (click)="cancelEdit()" class="text-gray-400 hover:text-white px-4 py-2">
-                    Cancel
+            <div>
+                <label class="text-xs text-gray-400 font-bold uppercase block mb-2">Imagen (URL)</label>
+                <input formControlName="image" type="text" placeholder="https://..."
+                    class="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-auto-accent focus:outline-none transition-colors">
+            </div>
+
+            <div class="md:col-span-2 flex justify-end gap-3 pt-4 border-t border-white/5">
+                <button type="button" (click)="cancelEdit()"
+                    class="text-gray-400 hover:text-white px-4 py-2 font-bold text-sm">
+                    Cancelar
                 </button>
                 <button [disabled]="createForm.invalid" type="submit"
-                    class="bg-white text-black font-bold rounded-lg px-6 py-2 hover:bg-gray-200 transition-colors disabled:opacity-50">
-                    {{ editingId() ? 'Update Post' : 'Publish Post' }}
+                    class="bg-auto-accent text-white font-bold rounded-lg px-6 py-2 hover:bg-red-600 transition-colors disabled:opacity-50">
+                    {{ editingId() ? 'Actualizar' : 'Publicar' }}
                 </button>
             </div>
         </form>
@@ -54,43 +71,46 @@
     <!-- Blog Posts Grid -->
     <div class="grid grid-cols-1 gap-4">
         @if (posts().length === 0) {
-        <div class="text-center py-12 text-gray-500 bg-auto-carbon rounded-xl border border-white/5">
-            No hay publicaciones. ¡Crea la primera!
+        <div class="text-center py-12 text-gray-500 bg-auto-carbon rounded-xl border border-white/5 border-dashed">
+            <span class="text-4xl block mb-2">📝</span>
+            <p>No hay publicaciones. ¡Crea la primera!</p>
         </div>
         }
 
         @for (post of posts(); track post.id) {
         <div
             class="bg-auto-carbon border border-white/5 rounded-xl p-4 flex items-center justify-between group hover:border-auto-accent/30 transition-colors">
-            <div class="flex items-center gap-4">
-                <img [src]="post.image" class="w-16 h-16 object-cover rounded-lg bg-black/50">
+            <div class="flex items-center gap-4 flex-1">
+                <img [src]="post.image" class="w-16 h-16 object-cover rounded-lg bg-black/50 border border-white/10">
                 <div>
-                    <h3 class="font-bold text-lg mb-1">{{ post.title }}</h3>
+                    <h3 class="font-bold text-lg text-white mb-1">{{ post.title }}</h3>
                     <div class="flex items-center gap-2 text-xs text-gray-400">
-                        <span class="bg-white/10 px-2 py-0.5 rounded">{{ post.category }}</span>
+                        <span class="bg-white/10 px-2 py-0.5 rounded text-auto-accent font-bold">{{ post.category
+                            }}</span>
                         <span>{{ post.date }}</span>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button (click)="editPost(post)"
-                            class="p-2 hover:bg-white/10 rounded-lg text-blue-400 hover:text-blue-300 transition-colors"
-                            title="Edit">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
-                                </path>
-                            </svg>
-                        </button>
-                        <button (click)="deletePost(post.id!)"
-                            class="p-2 hover:bg-red-500/20 rounded-lg text-gray-500 hover:text-red-500 transition-colors"
-                            title="Delete">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                                </path>
-                            </svg>
-                        </button>
-                    </div>
                 </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button (click)="editPost(post)"
+                    class="p-2 hover:bg-white/10 rounded-lg text-blue-400 hover:text-blue-300 transition-colors"
+                    title="Editar">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                        </path>
+                    </svg>
+                </button>
+                <button (click)="deletePost(post.id!)"
+                    class="p-2 hover:bg-red-500/10 rounded-lg text-gray-600 hover:text-red-500 transition-colors"
+                    title="Eliminar">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                        </path>
+                    </svg>
+                </button>
             </div>
         </div>
         }

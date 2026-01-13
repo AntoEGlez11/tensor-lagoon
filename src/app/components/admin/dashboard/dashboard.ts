@@ -1,4 +1,5 @@
 import { Component, inject, signal, computed, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CrmService, ServiceTicket, UserProfile } from '../../../services/crm';
@@ -39,6 +40,7 @@ export class Dashboard implements OnInit, OnDestroy {
   private toast = inject(ToastService);
   private appointmentService = inject(AppointmentService);
   private auth = inject(AuthService);
+  router = inject(Router);
 
   profile = this.auth.userProfile;
 
@@ -59,6 +61,24 @@ export class Dashboard implements OnInit, OnDestroy {
       completed: s.filter(t => t.status === 'completed').length,
       pending: s.filter(t => t.status === 'pending').length
     };
+  });
+
+  serviceStats = computed(() => {
+    const s = this.services();
+    const stats: Record<string, { count: number; revenue: number }> = {};
+
+    s.forEach(ticket => {
+      const name = ticket.package || 'Otro';
+      if (!stats[name]) stats[name] = { count: 0, revenue: 0 };
+      stats[name].count++;
+      stats[name].revenue += (ticket.price || 0);
+    });
+
+    // Convert to array and sort by revenue
+    return Object.entries(stats)
+      .map(([name, data]) => ({ name, ...data }))
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 5); // Top 5
   });
 
   recentServices = computed(() =>

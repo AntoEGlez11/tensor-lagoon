@@ -501,13 +501,7 @@ export class CrmService {
         });
     }
 
-    async verifyRaffleEntry(entryId: string, isVerified: boolean) {
-        const ref = doc(this.firestore, 'giveaway_entries', entryId);
-        await updateDoc(ref, {
-            status: isVerified ? 'verified' : 'pending_payment',
-            verifiedAt: isVerified ? serverTimestamp() : null
-        });
-    }
+
 
     // --- User Side Dynamic Raffle ---
 
@@ -599,10 +593,24 @@ export class CrmService {
         });
     }
 
+    async verifyRaffleEntry(entryId: string, isVerified: boolean) {
+        const ref = doc(this.firestore, 'giveaway_entries', entryId);
+        await updateDoc(ref, {
+            status: isVerified ? 'verified' : 'pending_payment'
+        });
+    }
+
+    async rejectRaffleEntry(entryId: string) {
+        const ref = doc(this.firestore, 'giveaway_entries', entryId);
+        await updateDoc(ref, { status: 'rejected' });
+    }
+
     async deleteProduct(id: string) {
         const ref = doc(this.firestore, 'inventory_products', id);
         await deleteDoc(ref);
     }
+
+
 
     // Quick Stock Adjustment
     async adjustStock(id: string, currentStock: number, adjustment: number) {

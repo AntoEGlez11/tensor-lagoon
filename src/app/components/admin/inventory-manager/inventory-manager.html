@@ -18,6 +18,17 @@
         }
     </div>
 
+    <!-- Filter Bar -->
+    @if (viewMode() === 'list') {
+    <div class="flex gap-2 mb-4">
+        <button (click)="showLowStockOnly.set(!showLowStockOnly())"
+            class="px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors flex items-center gap-2"
+            [ngClass]="showLowStockOnly() ? 'bg-red-500/20 text-red-500 border-red-500/50' : 'bg-transparent text-gray-400 border-white/10 hover:border-white/30'">
+            <span>⚠️</span> Solo Stock Bajo
+        </button>
+    </div>
+    }
+
     <!-- LIST VIEW -->
     @if (viewMode() === 'list') {
     <div class="bg-[#1a1a1a] border border-white/10 rounded-2xl overflow-hidden">

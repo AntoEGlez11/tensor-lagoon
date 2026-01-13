@@ -23,7 +23,7 @@
                 <p class="mb-6 font-medium text-xl text-white">{{ post()?.excerpt }}</p>
                 <!-- Since we don't have a rich text editor yet, we just show content if available, or placeholder text -->
                 @if (post()?.content) {
-                <div [innerHTML]="post()?.content"></div>
+                <div [innerHTML]="post()?.content" class="whitespace-pre-line"></div>
                 } @else {
                 <p>
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore

@@ -253,9 +253,10 @@ export class Dashboard implements OnDestroy {
         address: formVal.address
       });
       this.editMode.set(false);
+      this.toast.show('Perfil actualizado correctamente', 'success');
     } catch (err) {
       console.error(err);
-      alert('Error al actualizar perfil');
+      this.toast.show('Error al actualizar perfil', 'error');
     }
   }
 
@@ -286,9 +287,10 @@ export class Dashboard implements OnDestroy {
         licensePlate: val.licensePlate
       });
       this.showAddVehicle.set(false);
+      this.toast.show('Vehículo guardado correctamente', 'success');
     } catch (err) {
       console.error(err);
-      alert('Error al guardar vehículo');
+      this.toast.show('Error al guardar vehículo', 'error');
     }
   }
 
@@ -409,6 +411,23 @@ export class Dashboard implements OnDestroy {
 
   onRescheduleComplete() {
     this.closeRescheduleModal();
+    this.refreshBookings();
+  }
+
+  async cancelAppointment(appt: Appointment) {
+    if (!confirm('¿Estás seguro que deseas cancelar tu cita? Esta acción no se puede deshacer.')) return;
+
+    try {
+      await this.appointmentService.updateStatus(appt.id!, 'cancelled');
+      this.toast.show('Cita cancelada correctamente', 'success');
+      this.refreshBookings();
+    } catch (err) {
+      console.error(err);
+      this.toast.show('Error al cancelar la cita', 'error');
+    }
+  }
+
+  private refreshBookings() {
     if (this.user()) {
       const u = this.user()!;
       this.appointmentService.getUserAppointments(u.uid).subscribe(data => {

@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { CrmService, InventoryProduct } from '../../../services/crm';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -16,7 +16,17 @@ export class InventoryManager {
     toast = inject(ToastService);
     fb = inject(FormBuilder);
 
-    products = signal<InventoryProduct[]>([]);
+    allProducts = signal<InventoryProduct[]>([]);
+    showLowStockOnly = signal(false);
+
+    products = computed(() => {
+        const all = this.allProducts();
+        if (this.showLowStockOnly()) {
+            return all.filter(p => p.stock <= p.minStock);
+        }
+        return all;
+    });
+
     viewMode = signal<'list' | 'form'>('list');
     selectedProductId = signal<string | null>(null);
 
@@ -36,7 +46,7 @@ export class InventoryManager {
         console.log('INIT: Loading Inventory...');
         this.crm.getInventory((data) => {
             console.log('DATA: Inventory received:', data);
-            this.products.set(data);
+            this.allProducts.set(data);
         });
     }
 

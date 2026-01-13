@@ -3,6 +3,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CrmService } from '../../../services/crm';
 import { ToastService } from '../../../services/toast';
+import { doc, updateDoc } from '@angular/fire/firestore';
 
 // Custom Date Validator
 function dateRangeValidator(group: AbstractControl): ValidationErrors | null {
@@ -26,7 +27,25 @@ export class RaffleManager {
   toast = inject(ToastService);
   fb = inject(FormBuilder);
 
-  // Data
+  // import { Firestore } from '@angular/fire/firestore'; 
+  // Wait, I can just use the import I added. 
+  // Let's rely on adding a helper in CrmService instead, which is cleaner.
+
+  // Actually, for now, let's just inject Firestore here.
+  // We need to add Firestore to imports first if we do that. 
+  // But wait, the previous tool call ADDED doc/updateDoc but NOT Firestore injection.
+  // The error is `this.crm.firestore`. 
+
+  // Let's Fix via CrmService Refactor is cleaner, BUT user wants me to fix this file.
+  // I will assume I can access `this.crm['firestore']` as a dirty fix OR inject Firestore.
+  // Let's inject Firestore.
+
+  // Re-reading imports: I only imported { doc, updateDoc }, not Firestore.
+  // Let's correct imports in next step if needed, but for now let's just use `any` cast to bypass private if desperate, 
+  // OR better: add `rejectRaffleEntry` to CrmService.
+  // Let's add the method to CrmService in a separate step and call it here.
+
+  // For THIS step, I will replace the breaking code with a call to a NEW method I will create in CrmService.
   raffles = signal<any[]>([]);
   participants = signal<any[]>([]);
 
@@ -119,12 +138,47 @@ export class RaffleManager {
   }
 
   async toggleParticipantStatus(entry: any) {
+    // Cycles: pending -> verified -> pending (Simple Toggle)
+    // Now with reject: pending -> verified -> pending
+    // We will keep toggle for quick 'Confirm Payment'
     const newStatus = entry.status === 'verified' ? 'pending_payment' : 'verified';
     try {
       await this.crm.verifyRaffleEntry(entry.id, newStatus === 'verified');
-      this.toast.show('Estatus actualizado', 'success');
+      this.toast.show(newStatus === 'verified' ? 'Pago verificado' : 'Verificación revocada', 'success');
     } catch (err: any) {
       this.toast.show('Error al actualizar', 'error');
     }
+  }
+
+  // Winner State
+  winner = signal<any | null>(null);
+
+  async rejectParticipant(entry: any) {
+    if (!confirm('¿Marcar como rechazado? El usuario verá este estado.')) return;
+    try {
+      await this.crm.rejectRaffleEntry(entry.id);
+      this.toast.show('Participante rechazado', 'success');
+    } catch (err) {
+      this.toast.show('Error al rechazar', 'error');
+    }
+  }
+
+  async pickWinner() {
+    if (!confirm('¿Elegir un ganador ALEATORIO de los participantes verificados?')) return;
+
+    const verified = this.participants().filter(p => p.status === 'verified');
+    if (verified.length === 0) {
+      this.toast.show('No hay participantes verificados para elegir.', 'info');
+      return;
+    }
+
+    const winnerIndex = Math.floor(Math.random() * verified.length);
+    const selectedWinner = verified[winnerIndex];
+
+    this.winner.set(selectedWinner);
+  }
+
+  closeWinnerModal() {
+    this.winner.set(null);
   }
 }

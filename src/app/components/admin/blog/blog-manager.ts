@@ -23,6 +23,7 @@ export class BlogManager {
     createForm = this.fb.nonNullable.group({
         title: ['', Validators.required],
         excerpt: ['', Validators.required],
+        content: [''], // Full content (optional for now, or required)
         category: ['Detailing', Validators.required],
         image: ['https://placehold.co/600x400/1a1a1a/FFF?text=Blog+Image', Validators.required]
     });
@@ -32,6 +33,7 @@ export class BlogManager {
         this.createForm.patchValue({
             title: post.title,
             excerpt: post.excerpt,
+            content: post.content || '',
             category: post.category,
             image: post.image
         });
@@ -41,47 +43,52 @@ export class BlogManager {
     cancelEdit() {
         this.showCreateForm.set(false);
         this.editingId.set(null);
-        this.createForm.reset({ category: 'News' });
-        this.showCreateForm.set(false);
+        this.createForm.reset({ category: 'Noticias' }); // Default cat in Spanish?
+        // Let's keep internal values English for IDs if we want unique IDs logic, 
+        // but UI shows Spanish. The options in HTML are: Detailing, Mantenimiento, Noticias, Tips
+        // So default should match one of those.
+        this.createForm.patchValue({ category: 'Noticias' });
     }
 
     async savePost() {
         if (this.createForm.invalid) return;
 
         const postData = this.createForm.getRawValue();
-        const dateStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+        // Use Spanish Date Format? Or standard ISO?
+        // Let's use a nice readable format
+        const dateStr = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
 
         try {
             if (this.editingId()) {
                 await this.blogService.updatePost(this.editingId()!, {
                     ...postData,
-                    date: new Date().toLocaleDateString()
+                    date: dateStr // Update date on edit? Maybe optional. Let's update it to show "Last Updated" effectively.
                 });
-                this.toast.show('Post updated successfully!', 'success');
+                this.toast.show('¡Artículo actualizado correctamente!', 'success');
             } else {
                 await this.blogService.createPost({
                     ...postData,
-                    date: new Date().toLocaleDateString(),
-                    content: ''
+                    date: dateStr
                 });
-                this.toast.show('Post published successfully!', 'success');
+                this.toast.show('¡Artículo publicado correctamente!', 'success');
             }
 
             this.cancelEdit();
         } catch (err) {
             console.error(err);
-            this.toast.show('Failed to save post', 'error');
+            this.toast.show('Error al guardar el artículo', 'error');
         }
     }
 
     async deletePost(id: string) {
-        if (confirm('Are you sure you want to delete this post?')) {
+        if (confirm('¿Estás seguro que deseas eliminar esta publicación?')) {
             try {
                 await this.blogService.deletePost(id);
-                this.toast.show('Post deleted successfully', 'info');
+                this.toast.show('Artículo eliminado', 'success');
             } catch (err) {
                 console.error(err);
-                this.toast.show('Failed to delete post', 'error');
+                this.toast.show('Error al eliminar', 'error');
             }
         }
     }
